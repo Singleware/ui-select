@@ -1,0 +1,82 @@
+/**
+ * Copyright (C) 2018 Silas B. Domingos
+ * This source code is licensed under the MIT License as described in the file LICENSE.
+ */
+import { Selection } from './selection';
+
+/**
+ * Select element interface.
+ */
+export interface Element extends HTMLDivElement {
+  /**
+   * Select name.
+   */
+  name: string;
+  /**
+   * Select value.
+   */
+  value: string;
+  /**
+   * Default select value.
+   */
+  readonly defaultValue: string;
+  /**
+   * Selected option.
+   */
+  readonly selected: Selection;
+  /**
+   * Determines whether the select is empty or not.
+   */
+  readonly empty: boolean;
+  /**
+   * Required state.
+   */
+  required: boolean;
+  /**
+   * Read-only state.
+   */
+  readOnly: boolean;
+  /**
+   * Disabled state.
+   */
+  disabled: boolean;
+  /**
+   * Checks the select validity.
+   * @returns Returns true when the select is valid, false otherwise.
+   */
+  checkValidity: () => boolean;
+  /**
+   * Reports the select validity.
+   * @returns Returns true when the select is valid, false otherwise.
+   */
+  reportValidity: () => boolean;
+  /**
+   * Set the custom validity error message.
+   * @param error Custom error message.
+   */
+  setCustomValidity: (error?: string) => void;
+  /**
+   * Reset the select to its initial option and state.
+   */
+  reset: () => void;
+  /**
+   * Adds the specified option into the options list.
+   * @param label Option label element.
+   * @param value Option value.
+   * @param group Option group.
+   * @returns Returns the generated option element.
+   */
+  add: (label: JSX.Element, value: string, group?: string) => void;
+  /**
+   * Clear all options.
+   */
+  clear: () => void;
+  /**
+   * Opens the options list.
+   */
+  open: () => void;
+  /**
+   * Closes the options list.
+   */
+  close: () => void;
+}
