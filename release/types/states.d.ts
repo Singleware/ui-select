@@ -20,4 +20,8 @@ export interface States {
    * Determines whether the select is read-only or not.
    */
   readOnly: boolean;
+  /**
+   * Determines whether the select is required or not.
+   */
+  required: boolean;
 }

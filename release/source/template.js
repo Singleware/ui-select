@@ -33,7 +33,8 @@ let Template = Template_1 = class Template extends Control.Component {
             name: '',
             selection: void 0,
             options: [],
-            readOnly: false
+            readOnly: false,
+            required: false
         };
         /**
          * Input slot.
@@ -112,26 +113,22 @@ let Template = Template_1 = class Template extends Control.Component {
         const field = Control.getChildByProperty(this.inputSlot, 'value');
         if (field) {
             if (field instanceof HTMLButtonElement) {
-                DOM.clear(field);
-                if (option.label instanceof HTMLElement) {
-                    DOM.append(field, option.label.cloneNode(true));
-                }
-                else {
-                    DOM.append(field, option.label);
-                }
+                DOM.append(DOM.clear(field), option.label instanceof HTMLElement ? option.label.cloneNode(true) : option.label);
             }
             else if (field instanceof HTMLInputElement) {
                 field.value = option.label instanceof HTMLElement ? option.label.innerText : option.label;
-                if (option.value.length) {
-                    field.setCustomValidity('');
-                    delete field.dataset.empty;
-                }
-                else {
-                    if (this.required) {
-                        field.setCustomValidity('Please select a valid option.');
-                    }
-                }
             }
+            if (option.value.length) {
+                field.setCustomValidity('');
+                field.dataset.valid = 'on';
+                delete field.dataset.invalid;
+            }
+            else if (this.required) {
+                field.setCustomValidity('Please select a valid option.');
+                field.dataset.invalid = 'on';
+                delete field.dataset.valid;
+            }
+            delete field.dataset.empty;
         }
     }
     /**
@@ -173,7 +170,7 @@ let Template = Template_1 = class Template extends Control.Component {
     bindHandlers() {
         document.addEventListener('click', this.close.bind(this));
         this.skeleton.addEventListener('click', this.preserveHandler.bind(this));
-        this.skeleton.addEventListener('focus', this.open.bind(this), true);
+        this.skeleton.addEventListener('focus', this.toggle.bind(this), true);
     }
     /**
      * Bind exposed properties to the custom element.
@@ -184,6 +181,7 @@ let Template = Template_1 = class Template extends Control.Component {
             value: super.bindDescriptor(this, Template_1.prototype, 'value'),
             defaultValue: super.bindDescriptor(this, Template_1.prototype, 'defaultValue'),
             empty: super.bindDescriptor(this, Template_1.prototype, 'empty'),
+            opened: super.bindDescriptor(this, Template_1.prototype, 'opened'),
             required: super.bindDescriptor(this, Template_1.prototype, 'required'),
             readOnly: super.bindDescriptor(this, Template_1.prototype, 'readOnly'),
             disabled: super.bindDescriptor(this, Template_1.prototype, 'disabled'),
@@ -194,7 +192,8 @@ let Template = Template_1 = class Template extends Control.Component {
             add: super.bindDescriptor(this, Template_1.prototype, 'add'),
             clear: super.bindDescriptor(this, Template_1.prototype, 'clear'),
             open: super.bindDescriptor(this, Template_1.prototype, 'open'),
-            close: super.bindDescriptor(this, Template_1.prototype, 'close')
+            close: super.bindDescriptor(this, Template_1.prototype, 'close'),
+            toggle: super.bindDescriptor(this, Template_1.prototype, 'toggle')
         });
     }
     /**
@@ -225,12 +224,16 @@ let Template = Template_1 = class Template extends Control.Component {
      * Set select value.
      */
     set value(value) {
+        const field = Control.getChildByProperty(this.inputSlot, 'value');
         this.states.selection = void 0;
         for (const current of this.states.options) {
             if (current.value === value) {
                 this.selectOption(current);
-                break;
+                return;
             }
+        }
+        if (!this.states.selection) {
+            field.dataset.empty = 'on';
         }
     }
     /**
@@ -256,16 +259,22 @@ let Template = Template_1 = class Template extends Control.Component {
         return this.selected === void 0;
     }
     /**
+     * Get opened state.
+     */
+    get opened() {
+        return this.skeleton.dataset.open !== void 0;
+    }
+    /**
      * Get required state.
      */
     get required() {
-        return Control.getChildProperty(this.inputSlot, 'required');
+        return this.states.required;
     }
     /**
      * Set required state.
      */
     set required(state) {
-        Control.setChildProperty(this.inputSlot, 'required', state);
+        Control.setChildProperty(this.inputSlot, 'required', (this.states.required = state));
     }
     /**
      * Get read-only state.
@@ -303,6 +312,68 @@ let Template = Template_1 = class Template extends Control.Component {
         return this.skeleton;
     }
     /**
+     * Reset the select to its initial option and state.
+     */
+    reset() {
+        this.value = this.defaultValue;
+    }
+    /**
+     * Adds the specified option into the options list.
+     * @param label Option text label.
+     * @param value Option value.
+     * @param group Option group.
+     * @returns Returns the generated option element.
+     */
+    add(label, value, group) {
+        const element = DOM.create("div", { class: "option" }, label || value);
+        const option = { element: element, value: value, label: label, group: group };
+        element.addEventListener('click', () => {
+            this.close();
+            this.selectOption(option);
+            this.skeleton.dispatchEvent(new Event('change', { bubbles: true, cancelable: false }));
+        });
+        this.states.options.push(option);
+        if (this.value === value) {
+            this.selectOption(option);
+        }
+        return element;
+    }
+    /**
+     * Clear all options.
+     */
+    clear() {
+        this.states.options = [];
+        this.close();
+    }
+    /**
+     * Opens the options list.
+     */
+    open() {
+        if (!this.readOnly && !this.disabled) {
+            DOM.append(this.select, this.listSlot);
+            this.buildOptionList();
+            this.skeleton.dataset.open = 'on';
+        }
+    }
+    /**
+     * Closes the options list.
+     */
+    close() {
+        this.listSlot.remove();
+        delete this.skeleton.dataset.open;
+    }
+    /**
+     * Toggles the options list.
+     */
+    toggle() {
+        if (this.opened) {
+            this.close();
+        }
+        else {
+            this.open();
+        }
+    }
+    /**
      * Checks the select validity.
      * @returns Returns true when the select is valid, false otherwise.
      */
@@ -325,55 +396,6 @@ let Template = Template_1 = class Template extends Control.Component {
         if (field) {
             field.setCustomValidity(error);
         }
-    }
-    /**
-     * Reset the select to its initial option and state.
-     */
-    reset() {
-        this.value = this.defaultValue;
-    }
-    /**
-     * Adds the specified option into the options list.
-     * @param label Option text label.
-     * @param value Option value.
-     * @param group Option group.
-     * @returns Returns the generated option element.
-     */
-    add(label, value, group) {
-        const element = DOM.create("div", { class: "option" }, label || value);
-        const option = { element: element, value: value, label: label, group: group };
-        element.addEventListener('click', () => {
-            this.selectOption(option);
-            this.close();
-        });
-        this.states.options.push(option);
-        if (this.value === value) {
-            this.selectOption(option);
-        }
-        return element;
-    }
-    /**
-     * Clear all options.
-     */
-    clear() {
-        this.states.options = [];
-        this.close();
-    }
-    /**
-     * Opens the options list.
-     */
-    open() {
-        if (!this.readOnly && !this.disabled) {
-            this.close();
-            DOM.append(this.select, this.listSlot);
-            this.buildOptionList();
-        }
-    }
-    /**
-     * Closes the options list.
-     */
-    close() {
-        this.listSlot.remove();
     }
 };
 __decorate([
@@ -435,6 +457,9 @@ __decorate([
 ], Template.prototype, "empty", null);
 __decorate([
     Class.Public()
+], Template.prototype, "opened", null);
+__decorate([
+    Class.Public()
 ], Template.prototype, "required", null);
 __decorate([
     Class.Public()
@@ -445,15 +470,6 @@ __decorate([
 __decorate([
     Class.Public()
 ], Template.prototype, "element", null);
-__decorate([
-    Class.Public()
-], Template.prototype, "checkValidity", null);
-__decorate([
-    Class.Public()
-], Template.prototype, "reportValidity", null);
-__decorate([
-    Class.Public()
-], Template.prototype, "setCustomValidity", null);
 __decorate([
     Class.Public()
 ], Template.prototype, "reset", null);
@@ -469,6 +485,18 @@ __decorate([
 __decorate([
     Class.Public()
 ], Template.prototype, "close", null);
+__decorate([
+    Class.Public()
+], Template.prototype, "toggle", null);
+__decorate([
+    Class.Public()
+], Template.prototype, "checkValidity", null);
+__decorate([
+    Class.Public()
+], Template.prototype, "reportValidity", null);
+__decorate([
+    Class.Public()
+], Template.prototype, "setCustomValidity", null);
 Template = Template_1 = __decorate([
     Class.Describe()
 ], Template);

@@ -29,6 +29,10 @@ export interface Element extends HTMLDivElement {
    */
   readonly empty: boolean;
   /**
+   * Determines whether the options list is opened or not.
+   */
+  readonly opened: boolean;
+  /**
    * Required state.
    */
   required: boolean;
@@ -66,7 +70,7 @@ export interface Element extends HTMLDivElement {
    * @param group Option group.
    * @returns Returns the generated option element.
    */
-  add: (label: JSX.Element, value: string, group?: string) => void;
+  add: (label: JSX.Element, value: string, group?: string) => HTMLDivElement;
   /**
    * Clear all options.
    */
@@ -79,4 +83,8 @@ export interface Element extends HTMLDivElement {
    * Closes the options list.
    */
   close: () => void;
+  /**
+   * Toggles the options list.
+   */
+  toggle(): void;
 }

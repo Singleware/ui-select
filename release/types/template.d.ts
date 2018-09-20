@@ -98,6 +98,10 @@ export declare class Template extends Control.Component<Properties> {
      */
     readonly empty: any;
     /**
+     * Get opened state.
+     */
+    readonly opened: any;
+    /**
      * Get required state.
      */
     /**
@@ -123,21 +127,6 @@ export declare class Template extends Control.Component<Properties> {
      */
     readonly element: Element;
     /**
-     * Checks the select validity.
-     * @returns Returns true when the select is valid, false otherwise.
-     */
-    checkValidity(): boolean;
-    /**
-     * Reports the select validity.
-     * @returns Returns true when the select is valid, false otherwise.
-     */
-    reportValidity(): boolean;
-    /**
-     * Set the custom validity error message.
-     * @param error Custom error message.
-     */
-    setCustomValidity(error?: string): void;
-    /**
      * Reset the select to its initial option and state.
      */
     reset(): void;
@@ -161,4 +150,23 @@ export declare class Template extends Control.Component<Properties> {
      * Closes the options list.
      */
     close(): void;
+    /**
+     * Toggles the options list.
+     */
+    toggle(): void;
+    /**
+     * Checks the select validity.
+     * @returns Returns true when the select is valid, false otherwise.
+     */
+    checkValidity(): boolean;
+    /**
+     * Reports the select validity.
+     * @returns Returns true when the select is valid, false otherwise.
+     */
+    reportValidity(): boolean;
+    /**
+     * Set the custom validity error message.
+     * @param error Custom error message.
+     */
+    setCustomValidity(error?: string): void;
 }

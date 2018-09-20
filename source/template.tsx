@@ -25,7 +25,8 @@ export class Template extends Control.Component<Properties> {
     name: '',
     selection: void 0,
     options: [],
-    readOnly: false
+    readOnly: false,
+    required: false
   } as States;
 
   /**
@@ -124,23 +125,20 @@ export class Template extends Control.Component<Properties> {
     const field = Control.getChildByProperty(this.inputSlot, 'value') as any;
     if (field) {
       if (field instanceof HTMLButtonElement) {
-        DOM.clear(field);
-        if (option.label instanceof HTMLElement) {
-          DOM.append(field, option.label.cloneNode(true));
-        } else {
-          DOM.append(field, option.label);
-        }
+        DOM.append(DOM.clear(field), option.label instanceof HTMLElement ? option.label.cloneNode(true) : option.label);
       } else if (field instanceof HTMLInputElement) {
         field.value = option.label instanceof HTMLElement ? option.label.innerText : (option.label as string);
-        if (option.value.length) {
-          field.setCustomValidity('');
-          delete field.dataset.empty;
-        } else {
-          if (this.required) {
-            field.setCustomValidity('Please select a valid option.');
-          }
-        }
       }
+      if (option.value.length) {
+        field.setCustomValidity('');
+        field.dataset.valid = 'on';
+        delete field.dataset.invalid;
+      } else if (this.required) {
+        field.setCustomValidity('Please select a valid option.');
+        field.dataset.invalid = 'on';
+        delete field.dataset.valid;
+      }
+      delete field.dataset.empty;
     }
   }
 
@@ -190,7 +188,7 @@ export class Template extends Control.Component<Properties> {
   private bindHandlers(): void {
     document.addEventListener('click', this.close.bind(this));
     this.skeleton.addEventListener('click', this.preserveHandler.bind(this));
-    this.skeleton.addEventListener('focus', this.open.bind(this), true);
+    this.skeleton.addEventListener('focus', this.toggle.bind(this), true);
   }
 
   /**
@@ -203,6 +201,7 @@ export class Template extends Control.Component<Properties> {
       value: super.bindDescriptor(this, Template.prototype, 'value'),
       defaultValue: super.bindDescriptor(this, Template.prototype, 'defaultValue'),
       empty: super.bindDescriptor(this, Template.prototype, 'empty'),
+      opened: super.bindDescriptor(this, Template.prototype, 'opened'),
       required: super.bindDescriptor(this, Template.prototype, 'required'),
       readOnly: super.bindDescriptor(this, Template.prototype, 'readOnly'),
       disabled: super.bindDescriptor(this, Template.prototype, 'disabled'),
@@ -213,7 +212,8 @@ export class Template extends Control.Component<Properties> {
       add: super.bindDescriptor(this, Template.prototype, 'add'),
       clear: super.bindDescriptor(this, Template.prototype, 'clear'),
       open: super.bindDescriptor(this, Template.prototype, 'open'),
-      close: super.bindDescriptor(this, Template.prototype, 'close')
+      close: super.bindDescriptor(this, Template.prototype, 'close'),
+      toggle: super.bindDescriptor(this, Template.prototype, 'toggle')
     });
   }
 
@@ -266,12 +266,16 @@ export class Template extends Control.Component<Properties> {
    * Set select value.
    */
   public set value(value: string | undefined) {
+    const field = Control.getChildByProperty(this.inputSlot, 'value') as HTMLElement;
     this.states.selection = void 0;
     for (const current of this.states.options) {
       if (current.value === value) {
         this.selectOption(current);
-        break;
+        return;
       }
+    }
+    if (!this.states.selection) {
+      field.dataset.empty = 'on';
     }
   }
 
@@ -304,18 +308,26 @@ export class Template extends Control.Component<Properties> {
   }
 
   /**
+   * Get opened state.
+   */
+  @Class.Public()
+  public get opened(): any {
+    return this.skeleton.dataset.open !== void 0;
+  }
+
+  /**
    * Get required state.
    */
   @Class.Public()
   public get required(): boolean {
-    return Control.getChildProperty(this.inputSlot, 'required');
+    return this.states.required;
   }
 
   /**
    * Set required state.
    */
   public set required(state: boolean) {
-    Control.setChildProperty(this.inputSlot, 'required', state);
+    Control.setChildProperty(this.inputSlot, 'required', (this.states.required = state));
   }
 
   /**
@@ -362,6 +374,79 @@ export class Template extends Control.Component<Properties> {
   }
 
   /**
+   * Reset the select to its initial option and state.
+   */
+  @Class.Public()
+  public reset(): void {
+    this.value = this.defaultValue;
+  }
+
+  /**
+   * Adds the specified option into the options list.
+   * @param label Option text label.
+   * @param value Option value.
+   * @param group Option group.
+   * @returns Returns the generated option element.
+   */
+  @Class.Public()
+  public add(label: JSX.Element, value: string, group?: string): HTMLDivElement {
+    const element = <div class="option">{label || value}</div> as HTMLDivElement;
+    const option = { element: element, value: value, label: label, group: group };
+    element.addEventListener('click', () => {
+      this.close();
+      this.selectOption(option);
+      this.skeleton.dispatchEvent(new Event('change', { bubbles: true, cancelable: false }));
+    });
+    this.states.options.push(option);
+    if (this.value === value) {
+      this.selectOption(option);
+    }
+    return element;
+  }
+
+  /**
+   * Clear all options.
+   */
+  @Class.Public()
+  public clear(): void {
+    this.states.options = [];
+    this.close();
+  }
+
+  /**
+   * Opens the options list.
+   */
+  @Class.Public()
+  public open(): void {
+    if (!this.readOnly && !this.disabled) {
+      DOM.append(this.select, this.listSlot);
+      this.buildOptionList();
+      this.skeleton.dataset.open = 'on';
+    }
+  }
+
+  /**
+   * Closes the options list.
+   */
+  @Class.Public()
+  public close(): void {
+    this.listSlot.remove();
+    delete this.skeleton.dataset.open;
+  }
+
+  /**
+   * Toggles the options list.
+   */
+  @Class.Public()
+  public toggle(): void {
+    if (this.opened) {
+      this.close();
+    } else {
+      this.open();
+    }
+  }
+
+  /**
    * Checks the select validity.
    * @returns Returns true when the select is valid, false otherwise.
    */
@@ -389,67 +474,5 @@ export class Template extends Control.Component<Properties> {
     if (field) {
       field.setCustomValidity(error);
     }
-  }
-
-  /**
-   * Reset the select to its initial option and state.
-   */
-  @Class.Public()
-  public reset(): void {
-    this.value = this.defaultValue;
-  }
-
-  /**
-   * Adds the specified option into the options list.
-   * @param label Option text label.
-   * @param value Option value.
-   * @param group Option group.
-   * @returns Returns the generated option element.
-   */
-  @Class.Public()
-  public add(label: JSX.Element, value: string, group?: string): HTMLDivElement {
-    const element = <div class="option">{label || value}</div> as HTMLDivElement;
-    const option = { element: element, value: value, label: label, group: group };
-
-    element.addEventListener('click', () => {
-      this.selectOption(option);
-      this.close();
-    });
-
-    this.states.options.push(option);
-    if (this.value === value) {
-      this.selectOption(option);
-    }
-
-    return element;
-  }
-
-  /**
-   * Clear all options.
-   */
-  @Class.Public()
-  public clear(): void {
-    this.states.options = [];
-    this.close();
-  }
-
-  /**
-   * Opens the options list.
-   */
-  @Class.Public()
-  public open(): void {
-    if (!this.readOnly && !this.disabled) {
-      this.close();
-      DOM.append(this.select, this.listSlot);
-      this.buildOptionList();
-    }
-  }
-
-  /**
-   * Closes the options list.
-   */
-  @Class.Public()
-  public close(): void {
-    this.listSlot.remove();
   }
 }
