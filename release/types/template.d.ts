@@ -92,7 +92,7 @@ export declare class Template extends Control.Component<Properties> {
     /**
      * Get selected option.
      */
-    readonly selected: Selection | undefined;
+    readonly selection: Selection | undefined;
     /**
      * Get empty state.
      */

@@ -6,8 +6,6 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var Template_1;
-"use strict";
 /**
  * Copyright (C) 2018 Silas B. Domingos
  * This source code is licensed under the MIT License as described in the file LICENSE.
@@ -18,7 +16,7 @@ const Control = require("@singleware/ui-control");
 /**
  * Select template class.
  */
-let Template = Template_1 = class Template extends Control.Component {
+let Template = class Template extends Control.Component {
     /**
      * Default constructor.
      * @param properties Select properties.
@@ -64,6 +62,7 @@ let Template = Template_1 = class Template extends Control.Component {
   position: relative;
   height: inherit;
   width: inherit;
+  user-select: none;
 }
 :host > .select > .field > .input::slotted(*) {
   cursor: default;
@@ -176,31 +175,32 @@ let Template = Template_1 = class Template extends Control.Component {
      * Bind exposed properties to the custom element.
      */
     bindProperties() {
-        Object.defineProperties(this.skeleton, {
-            name: super.bindDescriptor(this, Template_1.prototype, 'name'),
-            value: super.bindDescriptor(this, Template_1.prototype, 'value'),
-            defaultValue: super.bindDescriptor(this, Template_1.prototype, 'defaultValue'),
-            empty: super.bindDescriptor(this, Template_1.prototype, 'empty'),
-            opened: super.bindDescriptor(this, Template_1.prototype, 'opened'),
-            required: super.bindDescriptor(this, Template_1.prototype, 'required'),
-            readOnly: super.bindDescriptor(this, Template_1.prototype, 'readOnly'),
-            disabled: super.bindDescriptor(this, Template_1.prototype, 'disabled'),
-            checkValidity: super.bindDescriptor(this, Template_1.prototype, 'checkValidity'),
-            reportValidity: super.bindDescriptor(this, Template_1.prototype, 'reportValidity'),
-            setCustomValidity: super.bindDescriptor(this, Template_1.prototype, 'setCustomValidity'),
-            reset: super.bindDescriptor(this, Template_1.prototype, 'reset'),
-            add: super.bindDescriptor(this, Template_1.prototype, 'add'),
-            clear: super.bindDescriptor(this, Template_1.prototype, 'clear'),
-            open: super.bindDescriptor(this, Template_1.prototype, 'open'),
-            close: super.bindDescriptor(this, Template_1.prototype, 'close'),
-            toggle: super.bindDescriptor(this, Template_1.prototype, 'toggle')
-        });
+        this.bindComponentProperties(this.skeleton, [
+            'name',
+            'value',
+            'defaultValue',
+            'selection',
+            'empty',
+            'opened',
+            'required',
+            'readOnly',
+            'disabled',
+            'checkValidity',
+            'reportValidity',
+            'setCustomValidity',
+            'reset',
+            'add',
+            'clear',
+            'open',
+            'close',
+            'toggle'
+        ]);
     }
     /**
      * Assign all element properties.
      */
     assignProperties() {
-        Control.assignProperties(this, this.properties, ['name', 'value', 'required', 'readOnly', 'disabled']);
+        this.assignComponentProperties(this.properties, ['name', 'value', 'required', 'readOnly', 'disabled']);
     }
     /**
      * Get select name.
@@ -245,7 +245,7 @@ let Template = Template_1 = class Template extends Control.Component {
     /**
      * Get selected option.
      */
-    get selected() {
+    get selection() {
         const selection = this.states.selection;
         if (selection) {
             return { label: selection.label, value: selection.value, group: selection.group };
@@ -256,7 +256,7 @@ let Template = Template_1 = class Template extends Control.Component {
      * Get empty state.
      */
     get empty() {
-        return this.selected === void 0;
+        return this.selection === void 0;
     }
     /**
      * Get opened state.
@@ -451,7 +451,7 @@ __decorate([
 ], Template.prototype, "defaultValue", null);
 __decorate([
     Class.Public()
-], Template.prototype, "selected", null);
+], Template.prototype, "selection", null);
 __decorate([
     Class.Public()
 ], Template.prototype, "empty", null);
@@ -497,7 +497,7 @@ __decorate([
 __decorate([
     Class.Public()
 ], Template.prototype, "setCustomValidity", null);
-Template = Template_1 = __decorate([
+Template = __decorate([
     Class.Describe()
 ], Template);
 exports.Template = Template;

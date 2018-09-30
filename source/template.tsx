@@ -72,6 +72,7 @@ export class Template extends Control.Component<Properties> {
   position: relative;
   height: inherit;
   width: inherit;
+  user-select: none;
 }
 :host > .select > .field > .input::slotted(*) {
   cursor: default;
@@ -196,25 +197,26 @@ export class Template extends Control.Component<Properties> {
    */
   @Class.Private()
   private bindProperties(): void {
-    Object.defineProperties(this.skeleton, {
-      name: super.bindDescriptor(this, Template.prototype, 'name'),
-      value: super.bindDescriptor(this, Template.prototype, 'value'),
-      defaultValue: super.bindDescriptor(this, Template.prototype, 'defaultValue'),
-      empty: super.bindDescriptor(this, Template.prototype, 'empty'),
-      opened: super.bindDescriptor(this, Template.prototype, 'opened'),
-      required: super.bindDescriptor(this, Template.prototype, 'required'),
-      readOnly: super.bindDescriptor(this, Template.prototype, 'readOnly'),
-      disabled: super.bindDescriptor(this, Template.prototype, 'disabled'),
-      checkValidity: super.bindDescriptor(this, Template.prototype, 'checkValidity'),
-      reportValidity: super.bindDescriptor(this, Template.prototype, 'reportValidity'),
-      setCustomValidity: super.bindDescriptor(this, Template.prototype, 'setCustomValidity'),
-      reset: super.bindDescriptor(this, Template.prototype, 'reset'),
-      add: super.bindDescriptor(this, Template.prototype, 'add'),
-      clear: super.bindDescriptor(this, Template.prototype, 'clear'),
-      open: super.bindDescriptor(this, Template.prototype, 'open'),
-      close: super.bindDescriptor(this, Template.prototype, 'close'),
-      toggle: super.bindDescriptor(this, Template.prototype, 'toggle')
-    });
+    this.bindComponentProperties(this.skeleton, [
+      'name',
+      'value',
+      'defaultValue',
+      'selection',
+      'empty',
+      'opened',
+      'required',
+      'readOnly',
+      'disabled',
+      'checkValidity',
+      'reportValidity',
+      'setCustomValidity',
+      'reset',
+      'add',
+      'clear',
+      'open',
+      'close',
+      'toggle'
+    ]);
   }
 
   /**
@@ -222,7 +224,7 @@ export class Template extends Control.Component<Properties> {
    */
   @Class.Private()
   private assignProperties(): void {
-    Control.assignProperties(this, this.properties, ['name', 'value', 'required', 'readOnly', 'disabled']);
+    this.assignComponentProperties(this.properties, ['name', 'value', 'required', 'readOnly', 'disabled']);
   }
 
   /**
@@ -291,7 +293,7 @@ export class Template extends Control.Component<Properties> {
    * Get selected option.
    */
   @Class.Public()
-  public get selected(): Selection | undefined {
+  public get selection(): Selection | undefined {
     const selection = this.states.selection;
     if (selection) {
       return { label: selection.label, value: selection.value, group: selection.group };
@@ -304,7 +306,7 @@ export class Template extends Control.Component<Properties> {
    */
   @Class.Public()
   public get empty(): any {
-    return this.selected === void 0;
+    return this.selection === void 0;
   }
 
   /**

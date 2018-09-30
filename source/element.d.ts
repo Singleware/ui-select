@@ -23,7 +23,7 @@ export interface Element extends HTMLDivElement {
   /**
    * Selected option.
    */
-  readonly selected: Selection;
+  readonly selection: Selection;
   /**
    * Determines whether the select is empty or not.
    */
