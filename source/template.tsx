@@ -48,6 +48,12 @@ export class Template extends Control.Component<Properties> {
   private listSlot = <slot name="list" class="list" /> as HTMLSlotElement;
 
   /**
+   * List of default nodes.
+   */
+  @Class.Private()
+  private defaultNodes = [] as Node[];
+
+  /**
    * Select element.
    */
   @Class.Private()
@@ -151,10 +157,11 @@ export class Template extends Control.Component<Properties> {
   private selectOption(option: Option): void {
     this.changeInput(option);
     if (this.states.selection) {
-      delete this.states.selection.element.dataset.checked;
+      delete this.states.selection.element.dataset.active;
     }
-    option.element.dataset.checked = 'on';
+    option.element.dataset.active = 'on';
     this.states.selection = option;
+    this.close();
   }
 
   /**
@@ -172,14 +179,19 @@ export class Template extends Control.Component<Properties> {
   }
 
   /**
-   * Preserve event handler.
+   * Toggle event handler.
    * @param event Event information.
    */
   @Class.Private()
-  private preserveHandler(event: Event): void {
+  private toggleHandler(event: Event): void {
     event.stopImmediatePropagation();
     event.stopPropagation();
     event.preventDefault();
+    if (this.opened) {
+      this.close();
+    } else {
+      this.open();
+    }
   }
 
   /**
@@ -188,8 +200,7 @@ export class Template extends Control.Component<Properties> {
   @Class.Private()
   private bindHandlers(): void {
     document.addEventListener('click', this.close.bind(this));
-    this.skeleton.addEventListener('click', this.preserveHandler.bind(this));
-    this.skeleton.addEventListener('focus', this.toggle.bind(this), true);
+    this.inputSlot.addEventListener('click', this.toggleHandler.bind(this));
   }
 
   /**
@@ -228,6 +239,21 @@ export class Template extends Control.Component<Properties> {
   }
 
   /**
+   * Initializes the component.
+   */
+  @Class.Private()
+  private initialize(): void {
+    const field = Control.getChildByProperty(this.inputSlot, 'value') as HTMLElement;
+    if (field instanceof HTMLButtonElement) {
+      for (const child of field.childNodes) {
+        this.defaultNodes.push(child);
+      }
+    } else if (field instanceof HTMLInputElement) {
+      field.readOnly = true;
+    }
+  }
+
+  /**
    * Default constructor.
    * @param properties Select properties.
    * @param children Select children.
@@ -235,10 +261,10 @@ export class Template extends Control.Component<Properties> {
   constructor(properties?: Properties, children?: any[]) {
     super(properties, children);
     DOM.append(this.skeleton.attachShadow({ mode: 'closed' }), this.styles, this.select);
-    Control.setChildProperty(this.inputSlot, 'readOnly', true);
     this.bindHandlers();
     this.bindProperties();
     this.assignProperties();
+    this.initialize();
   }
 
   /**
@@ -278,6 +304,11 @@ export class Template extends Control.Component<Properties> {
     }
     if (!this.states.selection) {
       field.dataset.empty = 'on';
+      if (field instanceof HTMLButtonElement) {
+        DOM.append(DOM.clear(field), ...this.defaultNodes);
+      } else if (field instanceof HTMLInputElement) {
+        field.value = '';
+      }
     }
   }
 
@@ -314,7 +345,7 @@ export class Template extends Control.Component<Properties> {
    */
   @Class.Public()
   public get opened(): any {
-    return this.skeleton.dataset.open !== void 0;
+    return this.listSlot.isConnected;
   }
 
   /**

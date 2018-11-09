@@ -15,7 +15,7 @@ export interface Element extends HTMLDivElement {
   /**
    * Select value.
    */
-  value: string;
+  value: string | undefined;
   /**
    * Default select value.
    */

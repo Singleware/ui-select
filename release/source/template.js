@@ -47,6 +47,10 @@ let Template = class Template extends Control.Component {
          */
         this.listSlot = DOM.create("slot", { name: "list", class: "list" });
         /**
+         * List of default nodes.
+         */
+        this.defaultNodes = [];
+        /**
          * Select element.
          */
         this.select = (DOM.create("label", { class: "select" },
@@ -99,10 +103,10 @@ let Template = class Template extends Control.Component {
          */
         this.skeleton = (DOM.create("div", { slot: this.properties.slot, class: this.properties.class }, this.children));
         DOM.append(this.skeleton.attachShadow({ mode: 'closed' }), this.styles, this.select);
-        Control.setChildProperty(this.inputSlot, 'readOnly', true);
         this.bindHandlers();
         this.bindProperties();
         this.assignProperties();
+        this.initialize();
     }
     /**
      * Changes the input content with the specified option information.
@@ -137,10 +141,11 @@ let Template = class Template extends Control.Component {
     selectOption(option) {
         this.changeInput(option);
         if (this.states.selection) {
-            delete this.states.selection.element.dataset.checked;
+            delete this.states.selection.element.dataset.active;
         }
-        option.element.dataset.checked = 'on';
+        option.element.dataset.active = 'on';
         this.states.selection = option;
+        this.close();
     }
     /**
      * Build the result options list.
@@ -155,21 +160,26 @@ let Template = class Template extends Control.Component {
         }
     }
     /**
-     * Preserve event handler.
+     * Toggle event handler.
      * @param event Event information.
      */
-    preserveHandler(event) {
+    toggleHandler(event) {
         event.stopImmediatePropagation();
         event.stopPropagation();
         event.preventDefault();
+        if (this.opened) {
+            this.close();
+        }
+        else {
+            this.open();
+        }
     }
     /**
      * Bind event handlers to update the custom element.
      */
     bindHandlers() {
         document.addEventListener('click', this.close.bind(this));
-        this.skeleton.addEventListener('click', this.preserveHandler.bind(this));
-        this.skeleton.addEventListener('focus', this.toggle.bind(this), true);
+        this.inputSlot.addEventListener('click', this.toggleHandler.bind(this));
     }
     /**
      * Bind exposed properties to the custom element.
@@ -203,6 +213,20 @@ let Template = class Template extends Control.Component {
         this.assignComponentProperties(this.properties, ['name', 'value', 'required', 'readOnly', 'disabled']);
     }
     /**
+     * Initializes the component.
+     */
+    initialize() {
+        const field = Control.getChildByProperty(this.inputSlot, 'value');
+        if (field instanceof HTMLButtonElement) {
+            for (const child of field.childNodes) {
+                this.defaultNodes.push(child);
+            }
+        }
+        else if (field instanceof HTMLInputElement) {
+            field.readOnly = true;
+        }
+    }
+    /**
      * Get select name.
      */
     get name() {
@@ -234,6 +258,12 @@ let Template = class Template extends Control.Component {
         }
         if (!this.states.selection) {
             field.dataset.empty = 'on';
+            if (field instanceof HTMLButtonElement) {
+                DOM.append(DOM.clear(field), ...this.defaultNodes);
+            }
+            else if (field instanceof HTMLInputElement) {
+                field.value = '';
+            }
         }
     }
     /**
@@ -262,7 +292,7 @@ let Template = class Template extends Control.Component {
      * Get opened state.
      */
     get opened() {
-        return this.skeleton.dataset.open !== void 0;
+        return this.listSlot.isConnected;
     }
     /**
      * Get required state.
@@ -412,6 +442,9 @@ __decorate([
 ], Template.prototype, "listSlot", void 0);
 __decorate([
     Class.Private()
+], Template.prototype, "defaultNodes", void 0);
+__decorate([
+    Class.Private()
 ], Template.prototype, "select", void 0);
 __decorate([
     Class.Private()
@@ -430,7 +463,7 @@ __decorate([
 ], Template.prototype, "buildOptionList", null);
 __decorate([
     Class.Private()
-], Template.prototype, "preserveHandler", null);
+], Template.prototype, "toggleHandler", null);
 __decorate([
     Class.Private()
 ], Template.prototype, "bindHandlers", null);
@@ -440,6 +473,9 @@ __decorate([
 __decorate([
     Class.Private()
 ], Template.prototype, "assignProperties", null);
+__decorate([
+    Class.Private()
+], Template.prototype, "initialize", null);
 __decorate([
     Class.Public()
 ], Template.prototype, "name", null);

@@ -23,6 +23,10 @@ export declare class Template extends Control.Component<Properties> {
      */
     private listSlot;
     /**
+     * List of default nodes.
+     */
+    private defaultNodes;
+    /**
      * Select element.
      */
     private select;
@@ -49,10 +53,10 @@ export declare class Template extends Control.Component<Properties> {
      */
     private buildOptionList;
     /**
-     * Preserve event handler.
+     * Toggle event handler.
      * @param event Event information.
      */
-    private preserveHandler;
+    private toggleHandler;
     /**
      * Bind event handlers to update the custom element.
      */
@@ -65,6 +69,10 @@ export declare class Template extends Control.Component<Properties> {
      * Assign all element properties.
      */
     private assignProperties;
+    /**
+     * Initializes the component.
+     */
+    private initialize;
     /**
      * Default constructor.
      * @param properties Select properties.
