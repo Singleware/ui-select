@@ -2,6 +2,7 @@
  * Copyright (C) 2018 Silas B. Domingos
  * This source code is licensed under the MIT License as described in the file LICENSE.
  */
+import { Metadata } from './metadata';
 
 /**
  * Option entity interface.
@@ -18,13 +19,13 @@ export interface Option {
   /**
    * Option group name.
    */
-  group?: string;
+  group: string | undefined;
   /**
    * Option tags.
    */
-  tags?: string[];
+  tags: string[];
   /**
    * Option custom data.
    */
-  custom?: any;
+  custom: any;
 }

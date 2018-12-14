@@ -5,14 +5,16 @@
  * The proposal of this example is to show how to use the basic select input element.
  */
 import * as Select from '../source';
-import * as DOM from '@singleware/jsx';
+import * as JSX from '@singleware/jsx';
 
 const field = (
-  <Select.Template>
+  <Select.Component>
     <input slot="input" type="text" />
-    <div slot="list" />
+    <input slot="search" type="text" />
     <div slot="arrow" />
-  </Select.Template>
+    <div slot="result" />
+    <div slot="empty">No results found.</div>
+  </Select.Component>
 ) as Select.Element;
 
 // Change disabled property of the element.
@@ -31,5 +33,5 @@ field.name = 'new-name';
 field.value = 'new-value';
 
 // Add field values.
-field.add(<b>Value</b>, 'value');
-field.add(<b>New value</b>, 'new-value');
+field.addOption('value', 'Value');
+field.addOption('new-value', 'New value');

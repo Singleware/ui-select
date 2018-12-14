@@ -4,23 +4,27 @@
  */
 
 /**
- * Select option interface.
+ * Option entity interface.
  */
 export interface Option {
   /**
    * Option label.
    */
-  label: JSX.Element;
+  label: string;
   /**
    * Option value.
    */
   value: string;
   /**
-   * Option element.
-   */
-  element: HTMLDivElement;
-  /**
    * Option group name.
    */
   group?: string;
+  /**
+   * Option tags.
+   */
+  tags?: string[];
+  /**
+   * Option custom data.
+   */
+  custom?: any;
 }

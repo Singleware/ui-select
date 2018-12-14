@@ -4,17 +4,9 @@
  */
 
 /**
- * Option entity interface.
+ * Data entity interface.
  */
-export interface Option {
-  /**
-   * Option label.
-   */
-  label: string;
-  /**
-   * Option value.
-   */
-  value: string;
+export interface Data {
   /**
    * Option group name.
    */
