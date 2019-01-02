@@ -31,7 +31,7 @@ let Component = class Component extends Control.Component {
         this.skeleton.addEventListener('renderoption', this.renderOptionHandler.bind(this));
         this.skeleton.addEventListener('renderselection', this.renderSelectionHandler.bind(this));
         this.skeleton.addEventListener('rendergroup', this.renderGroupHandler.bind(this));
-        this.initializeSelect();
+        this.initialize();
     }
     /**
      * Render option, event handler.
@@ -61,10 +61,10 @@ let Component = class Component extends Control.Component {
         }
     }
     /**
-     * Initializes the specified list of options.
+     * Add the specified list of options.
      * @param options List of options.
      */
-    initializeOptions(options) {
+    addOptions(options) {
         for (const option of options) {
             if (typeof option !== 'string') {
                 this.skeleton.addOption(option.value, option.label, { group: option.group, tags: option.tags, custom: option.custom });
@@ -77,9 +77,9 @@ let Component = class Component extends Control.Component {
     /**
      * Initializes the select element adding options and selecting the specified value.
      */
-    initializeSelect() {
+    initialize() {
         if (this.properties.options) {
-            this.initializeOptions(this.properties.options);
+            this.addOptions(this.properties.options);
             if (this.properties.value) {
                 this.skeleton.value = this.properties.value;
             }
@@ -293,10 +293,10 @@ __decorate([
 ], Component.prototype, "renderGroupHandler", null);
 __decorate([
     Class.Private()
-], Component.prototype, "initializeOptions", null);
+], Component.prototype, "addOptions", null);
 __decorate([
     Class.Private()
-], Component.prototype, "initializeSelect", null);
+], Component.prototype, "initialize", null);
 __decorate([
     Class.Public()
 ], Component.prototype, "element", null);

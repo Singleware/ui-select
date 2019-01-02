@@ -1,8 +1,9 @@
+import * as Control from '@singleware/ui-control';
 import * as Internals from './internals';
 /**
  * Select element.
  */
-export declare class Element extends HTMLElement {
+export declare class Element extends Control.Element {
     /**
      * Default value for resets.
      */
@@ -23,10 +24,6 @@ export declare class Element extends HTMLElement {
      * List of active options.
      */
     private activatedList;
-    /**
-     * Map of option entity by option element.
-     */
-    private optionsMap;
     /**
      * Map of option element by option entity.
      */
@@ -51,6 +48,10 @@ export declare class Element extends HTMLElement {
      * Determines whether the result or empty element slot can be closed or not.
      */
     private canClose;
+    /**
+     * Element styles.
+     */
+    private styles;
     /**
      * Input slot element.
      */
@@ -79,28 +80,6 @@ export declare class Element extends HTMLElement {
      * Select styles element.
      */
     private selectStyles;
-    /**
-     * Gets the first child element from the specified slot element.
-     * @param slot Slot element.
-     * @throws Throws an error when there are no children in the specified slot.
-     * @returns Returns the first child element.
-     */
-    private getChildElement;
-    /**
-     * Sets the property into the first child from specified slot element.
-     * @param slot Slot element.
-     * @param property Property name.
-     * @param value Property value.
-     * @throws Throws an error when there are no children in the specified slot.
-     * @returns Returns true when the specified property has been assigned, false otherwise.
-     */
-    private setChildProperty;
-    /**
-     * Updates the specified state in the element.
-     * @param name State name.
-     * @param state State value.
-     */
-    private updateState;
     /**
      * Update all validation attributes.
      */
@@ -133,10 +112,6 @@ export declare class Element extends HTMLElement {
      */
     private renderGroupElement;
     /**
-     * Reset the search element to find options.
-     */
-    private resetSearch;
-    /**
      * Selects the element that corresponds to the specified option entity.
      * @param option Option entity.
      */
@@ -150,19 +125,23 @@ export declare class Element extends HTMLElement {
     /**
      * Selects the element that corresponds to the specified option and notifies the change.
      * @param option Option entity.
+     * @returns Returns true when some option was selected, false otherwise.
      */
     private selectOptionAndNotify;
     /**
      * Selects the previous option.
+     * @returns Returns true when some option was selected, false otherwise.
      */
     private selectPreviousOptionAndNotify;
     /**
      * Selects the next option.
+     * @returns Returns true when some option was selected, false otherwise.
      */
     private selectNextOptionAndNotify;
     /**
      * Selects the next first option that corresponds to the specified search.
      * @param search Search value.
+     * @returns Returns true when some option was selected, false otherwise.
      */
     private selectNextOptionBySearchAndNotify;
     /**

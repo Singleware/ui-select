@@ -73,11 +73,11 @@ export class Component<T extends Properties = Properties> extends Control.Compon
   }
 
   /**
-   * Initializes the specified list of options.
+   * Add the specified list of options.
    * @param options List of options.
    */
   @Class.Private()
-  private initializeOptions(options: Option[] | string[]): void {
+  private addOptions(options: Option[] | string[]): void {
     for (const option of options) {
       if (typeof option !== 'string') {
         this.skeleton.addOption(option.value, option.label, { group: option.group, tags: option.tags, custom: option.custom });
@@ -91,9 +91,9 @@ export class Component<T extends Properties = Properties> extends Control.Compon
    * Initializes the select element adding options and selecting the specified value.
    */
   @Class.Private()
-  private initializeSelect(): void {
+  private initialize(): void {
     if (this.properties.options) {
-      this.initializeOptions(this.properties.options);
+      this.addOptions(this.properties.options);
       if (this.properties.value) {
         this.skeleton.value = this.properties.value;
       }
@@ -110,7 +110,7 @@ export class Component<T extends Properties = Properties> extends Control.Compon
     this.skeleton.addEventListener('renderoption', this.renderOptionHandler.bind(this) as EventListener);
     this.skeleton.addEventListener('renderselection', this.renderSelectionHandler.bind(this) as EventListener);
     this.skeleton.addEventListener('rendergroup', this.renderGroupHandler.bind(this) as EventListener);
-    this.initializeSelect();
+    this.initialize();
   }
 
   /**

@@ -7,6 +7,7 @@
 export { Component } from './component';
 export { Properties } from './properties';
 export { Element } from './element';
+export { Stylesheet } from './stylesheet';
 export { Option } from './option';
 
 import * as Internals from './internals';

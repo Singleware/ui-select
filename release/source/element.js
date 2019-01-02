@@ -12,10 +12,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const Class = require("@singleware/class");
 const JSX = require("@singleware/jsx");
+const Control = require("@singleware/ui-control");
+const stylesheet_1 = require("./stylesheet");
 /**
  * Select element.
  */
-let Element = class Element extends HTMLElement {
+let Element = class Element extends Control.Element {
     /**
      * Default constructor.
      */
@@ -38,10 +40,6 @@ let Element = class Element extends HTMLElement {
          */
         this.activatedList = [];
         /**
-         * Map of option entity by option element.
-         */
-        this.optionsMap = new WeakMap();
-        /**
          * Map of option element by option entity.
          */
         this.optionElementMap = new WeakMap();
@@ -58,9 +56,13 @@ let Element = class Element extends HTMLElement {
          */
         this.canClose = true;
         /**
+         * Element styles.
+         */
+        this.styles = new stylesheet_1.Stylesheet();
+        /**
          * Input slot element.
          */
-        this.inputSlot = JSX.create("slot", { name: "input", class: "input", onClick: this.toggleListHandler.bind(this) });
+        this.inputSlot = (JSX.create("slot", { name: "input", class: "input", onClick: this.toggleListHandler.bind(this), onSlotChange: this.slotChangeHandler.bind(this) }));
         /**
          * Arrow slot element.
          */
@@ -90,118 +92,19 @@ let Element = class Element extends HTMLElement {
         /**
          * Select styles element.
          */
-        this.selectStyles = (JSX.create("style", null, `:host > .select {
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  height: inherit;
-  width: inherit;
-  user-select: none;
-}
-:host(:not([opened])) > .select > .field {
-  display: flex;
-}
-:host([searchable][opened]) > .select > .field > .input::slotted(*),
-:host([searchable]:not([opened])) > .select > .field > .search::slotted(*),
-:host(:not([searchable])) > .select > .field > .search::slotted(*),
-:host(:not([opened])) > .select > .result::slotted(*),
-:host(:not([found])) > .select > .result::slotted(*) {
-  display: none;
-}
-:host(:not([opened])) > .select > .empty::slotted(*),
-:host([opened][found]) > .select > .empty::slotted(*) {
-  display: none;
-}
-:host > .select > .field > .input::slotted(*) {
-  cursor: default;
-}
-:host > .select > .field > .search::slotted(*),
-:host > .select > .field > .input::slotted(*) {
-  text-align: left;
-  width: 100%;
-}
-:host > .select > .field > .arrow {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  right: 0;
-}
-:host > .select > .field > .arrow::slotted(*) {
-  position: absolute;
-  top: 50%;
-  right: 0.5rem;
-  width: 0;
-  height: 0;
-  transform: translate(-50%,-50%);
-  border-left: 0.1875rem solid transparent;
-  border-right: 0.1875rem solid transparent;
-  border-top: 0.25rem solid black;
-}
-:host > .select > .result::slotted(*),
-:host > .select > .empty::slotted(*) {
-  display: block;
-  position: absolute;
-  border: 0.0625rem solid black;
-  overflow: auto;
-  top: 100%;
-  width: 100%;
-  z-index: 1;
-}`));
+        this.selectStyles = JSX.create("style", { type: "text/css" }, this.styles.toString());
         const shadow = JSX.append(this.attachShadow({ mode: 'closed' }), this.selectStyles, this.selectLayout);
         shadow.addEventListener('keydown', this.optionKeydownHandler.bind(this));
-        this.inputSlot.addEventListener('slotchange', this.slotChangeHandler.bind(this));
         this.inputSlot.addEventListener('focus', this.focusListHandler.bind(this), true);
         this.inputSlot.addEventListener('blur', this.blurListHandler.bind(this), true);
         this.searchSlot.addEventListener('blur', this.blurListHandler.bind(this), true);
     }
     /**
-     * Gets the first child element from the specified slot element.
-     * @param slot Slot element.
-     * @throws Throws an error when there are no children in the specified slot.
-     * @returns Returns the first child element.
-     */
-    getChildElement(slot) {
-        const child = slot.assignedNodes()[0];
-        if (!child) {
-            throw new Error(`There are no children in the '${slot.name}' slot.`);
-        }
-        return child;
-    }
-    /**
-     * Sets the property into the first child from specified slot element.
-     * @param slot Slot element.
-     * @param property Property name.
-     * @param value Property value.
-     * @throws Throws an error when there are no children in the specified slot.
-     * @returns Returns true when the specified property has been assigned, false otherwise.
-     */
-    setChildProperty(slot, property, value) {
-        const child = this.getChildElement(slot);
-        if (property in child) {
-            child[property] = value;
-            return true;
-        }
-        return false;
-    }
-    /**
-     * Updates the specified state in the element.
-     * @param name State name.
-     * @param state State value.
-     */
-    updateState(name, state) {
-        if (state) {
-            this.setAttribute(name, '');
-        }
-        else {
-            this.removeAttribute(name);
-        }
-    }
-    /**
      * Update all validation attributes.
      */
     updateValidation() {
-        this.updateState('empty', this.empty);
-        this.updateState('invalid', !this.empty && !this.checkValidity());
+        this.updatePropertyState('empty', this.empty);
+        this.updatePropertyState('invalid', !this.empty && !this.checkValidity());
     }
     /**
      * Updates the input element with the specified option entity.
@@ -209,7 +112,7 @@ let Element = class Element extends HTMLElement {
      */
     updateInputSelection(option) {
         const selection = this.renderSelectionElement(option);
-        const input = this.getChildElement(this.inputSlot);
+        const input = this.getRequiredChildElement(this.inputSlot);
         if (input instanceof HTMLButtonElement) {
             JSX.append(JSX.clear(input), selection);
         }
@@ -221,7 +124,7 @@ let Element = class Element extends HTMLElement {
      * Updates the result element with any option found.
      */
     updateResultList() {
-        const result = JSX.clear(this.getChildElement(this.resultSlot));
+        const result = JSX.clear(this.getRequiredChildElement(this.resultSlot));
         const search = this.search;
         this.activatedList = [];
         for (const option of this.optionsList) {
@@ -246,7 +149,7 @@ let Element = class Element extends HTMLElement {
         if (this.selectedElement) {
             this.selectedElement.scrollIntoView({ block: 'center' });
         }
-        this.updateState('found', this.activatedList.length !== 0);
+        this.updatePropertyState('found', this.activatedList.length !== 0);
     }
     /**
      * Renders a new option element for the specified option entity.
@@ -255,7 +158,8 @@ let Element = class Element extends HTMLElement {
      */
     renderOptionElement(option) {
         const detail = { option: option, element: void 0 };
-        if (this.dispatchEvent(new CustomEvent('renderoption', { bubbles: true, cancelable: true, detail: detail }))) {
+        const event = new CustomEvent('renderoption', { bubbles: true, cancelable: true, detail: detail });
+        if (this.dispatchEvent(event)) {
             return (JSX.create("div", { class: "option", onClick: this.optionClickHandler.bind(this, option) }, detail.element || option.label || option.value));
         }
         return void 0;
@@ -267,7 +171,8 @@ let Element = class Element extends HTMLElement {
      */
     renderSelectionElement(option) {
         const detail = { option: option, element: void 0 };
-        if (this.dispatchEvent(new CustomEvent('renderselection', { bubbles: true, cancelable: true, detail: detail }))) {
+        const event = new CustomEvent('renderselection', { bubbles: true, cancelable: true, detail: detail });
+        if (this.dispatchEvent(event)) {
             return JSX.create("div", { class: "selection" }, detail.element || option.label || option.value);
         }
         return void 0;
@@ -279,25 +184,11 @@ let Element = class Element extends HTMLElement {
      */
     renderGroupElement(group) {
         const detail = { group: group, element: void 0 };
-        if (this.dispatchEvent(new CustomEvent('rendergroup', { bubbles: true, cancelable: true, detail: detail }))) {
+        const event = new CustomEvent('rendergroup', { bubbles: true, cancelable: true, detail: detail });
+        if (this.dispatchEvent(event)) {
             return JSX.create("div", { class: "group" }, detail.element || group.label);
         }
         return void 0;
-    }
-    /**
-     * Reset the search element to find options.
-     */
-    resetSearch() {
-        const search = this.getChildElement(this.searchSlot);
-        if (search.reset instanceof Function) {
-            search.reset();
-        }
-        else if ('value' in search) {
-            search.value = search.defaultValue;
-        }
-        if (search.focus instanceof Function) {
-            search.focus();
-        }
     }
     /**
      * Selects the element that corresponds to the specified option entity.
@@ -334,56 +225,63 @@ let Element = class Element extends HTMLElement {
     /**
      * Selects the element that corresponds to the specified option and notifies the change.
      * @param option Option entity.
+     * @returns Returns true when some option was selected, false otherwise.
      */
     selectOptionAndNotify(option) {
         if (option !== this.selectedOption) {
-            const savedOption = this.selectedOption;
+            const event = new Event('change', { bubbles: true, cancelable: true });
+            const saved = this.selectedOption;
             this.selectOption(option);
-            if (!this.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }))) {
-                if (savedOption) {
-                    this.selectOption(savedOption);
+            if (!this.dispatchEvent(event)) {
+                if (saved) {
+                    this.selectOption(saved);
                 }
                 else {
                     this.unselectOption();
                 }
+                return false;
             }
         }
+        return true;
     }
     /**
      * Selects the previous option.
+     * @returns Returns true when some option was selected, false otherwise.
      */
     selectPreviousOptionAndNotify() {
         const index = this.activatedList.indexOf(this.selectedOption);
         const option = this.activatedList[(index - 1 > -1 ? index : this.activatedList.length) - 1];
-        this.selectOptionAndNotify(option);
+        return this.selectOptionAndNotify(option);
     }
     /**
      * Selects the next option.
+     * @returns Returns true when some option was selected, false otherwise.
      */
     selectNextOptionAndNotify() {
         const index = this.activatedList.indexOf(this.selectedOption);
         const option = this.activatedList[index + 1 < this.activatedList.length ? index + 1 : 0];
-        this.selectOptionAndNotify(option);
+        return this.selectOptionAndNotify(option);
     }
     /**
      * Selects the next first option that corresponds to the specified search.
      * @param search Search value.
+     * @returns Returns true when some option was selected, false otherwise.
      */
     selectNextOptionBySearchAndNotify(search) {
         let index = this.activatedList.indexOf(this.selectedOption);
         for (let l = 0; l < this.activatedList.length; ++l) {
             const option = this.activatedList[++index % this.activatedList.length];
             if (option.tags.find(tag => tag.indexOf(search) === 0)) {
-                this.selectOptionAndNotify(option);
-                break;
+                return this.selectOptionAndNotify(option);
             }
         }
+        return false;
     }
     /**
      * Unselects the current selected option.
      */
     unselectOption() {
-        const input = this.getChildElement(this.inputSlot);
+        const input = this.getRequiredChildElement(this.inputSlot);
         if (input instanceof HTMLButtonElement) {
             JSX.append(JSX.clear(input), ...this.defaultNodes);
         }
@@ -430,16 +328,15 @@ let Element = class Element extends HTMLElement {
             event.preventDefault();
             this.selectNextOptionAndNotify();
         }
-        else if (!this.searchable) {
+        else if (!this.searchable && this.selectNextOptionBySearchAndNotify(event.key)) {
             event.preventDefault();
-            this.selectNextOptionBySearchAndNotify(event.key);
         }
     }
     /**
      * Updates the current selection into the new input slot element.
      */
     slotChangeHandler() {
-        const input = this.getChildElement(this.inputSlot);
+        const input = this.getRequiredChildElement(this.inputSlot);
         if (input instanceof HTMLButtonElement) {
             this.defaultNodes = [];
             for (const node of input.childNodes) {
@@ -467,7 +364,8 @@ let Element = class Element extends HTMLElement {
      */
     focusListHandler() {
         if (!this.opened) {
-            this.dispatchEvent(new Event('focus', { bubbles: true, cancelable: true }));
+            const event = new Event('focus', { bubbles: true, cancelable: true });
+            this.dispatchEvent(event);
         }
     }
     /**
@@ -475,7 +373,8 @@ let Element = class Element extends HTMLElement {
      */
     blurListHandler() {
         if (this.canClose) {
-            if (this.dispatchEvent(new Event('blur', { bubbles: true, cancelable: true }))) {
+            const event = new Event('blur', { bubbles: true, cancelable: true });
+            if (this.dispatchEvent(event)) {
                 this.close();
             }
         }
@@ -516,7 +415,7 @@ let Element = class Element extends HTMLElement {
      * Gets the current search text.
      */
     get search() {
-        return this.searchable ? this.getChildElement(this.searchSlot).value : void 0;
+        return this.searchable ? this.getRequiredChildElement(this.searchSlot).value : void 0;
     }
     /**
      * Gets the opened state.
@@ -553,7 +452,7 @@ let Element = class Element extends HTMLElement {
      */
     set name(name) {
         this.setAttribute('name', name);
-        this.setChildProperty(this.inputSlot, 'name', name);
+        this.setRequiredChildProperty(this.inputSlot, 'name', name);
     }
     /**
      * Gets the element value.
@@ -580,7 +479,7 @@ let Element = class Element extends HTMLElement {
      * Sets the searchable state of the element.
      */
     set searchable(state) {
-        this.updateState('searchable', state);
+        this.updatePropertyState('searchable', state);
     }
     /**
      * Gets the required state of the element.
@@ -592,8 +491,8 @@ let Element = class Element extends HTMLElement {
      * Sets the required state of the element.
      */
     set required(state) {
-        this.setChildProperty(this.inputSlot, 'required', state);
-        this.updateState('required', state);
+        this.setRequiredChildProperty(this.inputSlot, 'required', state);
+        this.updatePropertyState('required', state);
         this.updateValidation();
     }
     /**
@@ -606,7 +505,7 @@ let Element = class Element extends HTMLElement {
      * Sets the read-only state of the element.
      */
     set readOnly(state) {
-        this.updateState('readonly', state);
+        this.updatePropertyState('readonly', state);
     }
     /**
      * Gets the disabled state of the element.
@@ -618,22 +517,19 @@ let Element = class Element extends HTMLElement {
      * Sets the disabled state of the element.
      */
     set disabled(state) {
-        this.updateState('disabled', this.setChildProperty(this.inputSlot, 'disabled', state) && state);
+        this.updatePropertyState('disabled', this.setRequiredChildProperty(this.inputSlot, 'disabled', state) && state);
     }
     /**
      * Move the focus to this element.
      */
     focus() {
-        const target = this.getChildElement(this.searchable && this.opened ? this.searchSlot : this.inputSlot);
-        if (target.focus instanceof Function) {
-            target.focus();
-        }
+        this.callRequiredChildMethod(this.searchable && this.opened ? this.searchSlot : this.inputSlot, 'focus', []);
     }
     /**
      * Reset the element value to its initial value.
      */
     reset() {
-        const input = this.getChildElement(this.inputSlot);
+        const input = this.getRequiredChildElement(this.inputSlot);
         if (input.reset instanceof Function) {
             input.reset();
         }
@@ -647,19 +543,15 @@ let Element = class Element extends HTMLElement {
      * @returns Returns true when the element is valid, false otherwise.
      */
     checkValidity() {
-        const input = this.getChildElement(this.inputSlot);
-        return ((!this.required || (this.value !== void 0 && this.value.length)) &&
-            (!(input.checkValidity instanceof Function) || input.checkValidity()));
+        return ((!this.required || (this.value !== void 0 && this.value.length !== 0)) &&
+            this.callRequiredChildMethod(this.inputSlot, 'checkValidity', []) !== false);
     }
     /**
      * Set the element's custom validity error message.
      * @param error Custom error message.
      */
     setCustomValidity(error) {
-        const input = this.getChildElement(this.inputSlot);
-        if (input.setCustomValidity instanceof Function) {
-            input.setCustomValidity(error);
-        }
+        this.callRequiredChildMethod(this.inputSlot, 'setCustomValidity', [error]);
     }
     /**
      * Adds the specified group into the groups list.
@@ -691,7 +583,6 @@ let Element = class Element extends HTMLElement {
         };
         const element = this.renderOptionElement(option);
         if (element) {
-            this.optionsMap.set(element, option);
             this.optionElementMap.set(option, element);
             this.optionsList.push(option);
             this.updateResultList();
@@ -704,8 +595,8 @@ let Element = class Element extends HTMLElement {
         this.optionsList = [];
         this.unselectOption();
         this.updateValidation();
-        this.updateState('found', false);
-        JSX.clear(this.getChildElement(this.resultSlot));
+        this.updatePropertyState('found', false);
+        JSX.clear(this.getRequiredChildElement(this.resultSlot));
     }
     /**
      * Opens the options list.
@@ -713,19 +604,28 @@ let Element = class Element extends HTMLElement {
     open() {
         if (!this.readOnly && !this.disabled) {
             if (this.searchable) {
+                const search = this.getRequiredChildElement(this.searchSlot);
+                if (search.reset instanceof Function) {
+                    search.reset();
+                }
+                else if ('value' in search) {
+                    search.value = search.defaultValue;
+                }
+                if (search.focus instanceof Function) {
+                    search.focus();
+                }
                 this.canClose = false;
-                this.resetSearch();
             }
             this.updateResultList();
-            this.updateState('opened', true);
+            this.updatePropertyState('opened', true);
         }
     }
     /**
      * Closes the options list.
      */
     close() {
-        this.updateState('found', false);
-        this.updateState('opened', false);
+        this.updatePropertyState('found', false);
+        this.updatePropertyState('opened', false);
     }
     /**
      * Toggles the options list.
@@ -756,9 +656,6 @@ __decorate([
 ], Element.prototype, "activatedList", void 0);
 __decorate([
     Class.Private()
-], Element.prototype, "optionsMap", void 0);
-__decorate([
-    Class.Private()
 ], Element.prototype, "optionElementMap", void 0);
 __decorate([
     Class.Private()
@@ -775,6 +672,9 @@ __decorate([
 __decorate([
     Class.Private()
 ], Element.prototype, "canClose", void 0);
+__decorate([
+    Class.Private()
+], Element.prototype, "styles", void 0);
 __decorate([
     Class.Private()
 ], Element.prototype, "inputSlot", void 0);
@@ -798,15 +698,6 @@ __decorate([
 ], Element.prototype, "selectStyles", void 0);
 __decorate([
     Class.Private()
-], Element.prototype, "getChildElement", null);
-__decorate([
-    Class.Private()
-], Element.prototype, "setChildProperty", null);
-__decorate([
-    Class.Private()
-], Element.prototype, "updateState", null);
-__decorate([
-    Class.Private()
 ], Element.prototype, "updateValidation", null);
 __decorate([
     Class.Private()
@@ -823,9 +714,6 @@ __decorate([
 __decorate([
     Class.Private()
 ], Element.prototype, "renderGroupElement", null);
-__decorate([
-    Class.Private()
-], Element.prototype, "resetSearch", null);
 __decorate([
     Class.Private()
 ], Element.prototype, "selectOption", null);

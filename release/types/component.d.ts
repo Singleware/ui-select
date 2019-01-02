@@ -26,14 +26,14 @@ export declare class Component<T extends Properties = Properties> extends Contro
      */
     private renderGroupHandler;
     /**
-     * Initializes the specified list of options.
+     * Add the specified list of options.
      * @param options List of options.
      */
-    private initializeOptions;
+    private addOptions;
     /**
      * Initializes the select element adding options and selecting the specified value.
      */
-    private initializeSelect;
+    private initialize;
     /**
      * Default constructor.
      * @param properties Initial properties.

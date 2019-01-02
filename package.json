@@ -7,7 +7,7 @@
   "name": "@singleware/ui-select",
   "description": "Singleware UI select package.",
   "license": "MIT",
-  "version": "1.1.20",
+  "version": "1.1.21",
   "main": "release/source/index.js",
   "types": "release/types/index.d.ts",
   "keywords": [
@@ -15,8 +15,8 @@
     "select input",
     "ui select",
     "user interface",
-    "shadow dom",
     "custom element",
+    "shadow dom",
     "browser"
   ],
   "repository": {
@@ -24,9 +24,10 @@
     "url": "https://github.com/singleware/ui-select"
   },
   "dependencies": {
-    "@singleware/class": "^1.1.18",
-    "@singleware/jsx": "^1.0.19",
-    "@singleware/ui-control": "^1.1.5"
+    "@singleware/class": "^1.1.19",
+    "@singleware/jsx": "^1.0.20",
+    "@singleware/oss": "^1.0.2",
+    "@singleware/ui-control": "^1.1.10"
   },
   "devDependencies": {
     "prettier": "^1.15.3",
