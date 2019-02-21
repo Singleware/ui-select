@@ -5,7 +5,7 @@
 import { Metadata } from './metadata';
 
 /**
- * Option entity interface.
+ * Internal option interface.
  */
 export interface Option {
   /**

@@ -13,5 +13,5 @@ var stylesheet_1 = require("./stylesheet");
 exports.Stylesheet = stylesheet_1.Stylesheet;
 const Internals = require("./internals");
 exports.Internals = Internals;
-const Render = require("./render");
-exports.Render = Render;
+const Rendering = require("./rendering");
+exports.Rendering = Rendering;

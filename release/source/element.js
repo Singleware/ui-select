@@ -288,9 +288,7 @@ let Element = class Element extends Control.Element {
         else if (input instanceof HTMLInputElement) {
             input.value = this.defaultText;
         }
-        if (this.selectedElement) {
-            delete this.selectedElement.dataset.selected;
-        }
+        delete this.selectedElement.dataset.selected;
         this.selectedOption = void 0;
         this.selectedElement = void 0;
     }
@@ -465,8 +463,10 @@ let Element = class Element extends Control.Element {
      */
     set value(value) {
         if (value === void 0 || !this.selectOptionByValue(value)) {
-            this.unselectOption();
-            this.updateValidation();
+            if (this.selectedOption) {
+                this.unselectOption();
+                this.updateValidation();
+            }
         }
     }
     /**
@@ -592,9 +592,11 @@ let Element = class Element extends Control.Element {
      * Clear all options.
      */
     clear() {
+        if (this.selectedOption) {
+            this.unselectOption();
+            this.updateValidation();
+        }
         this.optionsList = [];
-        this.unselectOption();
-        this.updateValidation();
         this.updatePropertyState('found', false);
         JSX.clear(this.getRequiredChildElement(this.resultSlot));
     }

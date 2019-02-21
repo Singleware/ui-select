@@ -4,7 +4,7 @@
  */
 
 /**
- * Group entity interface.
+ * Internal group interface.
  */
 export interface Group {
   /**

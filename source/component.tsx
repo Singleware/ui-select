@@ -6,7 +6,7 @@ import * as Class from '@singleware/class';
 import * as JSX from '@singleware/jsx';
 import * as Control from '@singleware/ui-control';
 
-import * as Render from './render';
+import * as Rendering from './rendering';
 import * as Internals from './internals';
 
 import { Properties } from './properties';
@@ -44,7 +44,7 @@ export class Component<T extends Properties = Properties> extends Control.Compon
    * @param event Event information.
    */
   @Class.Private()
-  private renderOptionHandler(event: CustomEvent<Render.Option>): void {
+  private renderOptionHandler(event: CustomEvent<Rendering.Option>): void {
     if (this.properties.onRenderOption) {
       event.detail.element = this.properties.onRenderOption(event.detail.option);
     }
@@ -55,7 +55,7 @@ export class Component<T extends Properties = Properties> extends Control.Compon
    * @param event Event information.
    */
   @Class.Private()
-  private renderSelectionHandler(event: CustomEvent<Render.Option>): void {
+  private renderSelectionHandler(event: CustomEvent<Rendering.Option>): void {
     if (this.properties.onRenderSelection) {
       event.detail.element = this.properties.onRenderSelection(event.detail.option);
     }
@@ -66,7 +66,7 @@ export class Component<T extends Properties = Properties> extends Control.Compon
    * @param event Event information.
    */
   @Class.Private()
-  private renderGroupHandler(event: CustomEvent<Render.Group>): void {
+  private renderGroupHandler(event: CustomEvent<Rendering.Group>): void {
     if (this.properties.onRenderGroup) {
       event.detail.element = this.properties.onRenderGroup(event.detail.group);
     }

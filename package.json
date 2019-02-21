@@ -7,7 +7,7 @@
   "name": "@singleware/ui-select",
   "description": "Singleware UI select package.",
   "license": "MIT",
-  "version": "1.1.21",
+  "version": "1.1.22",
   "main": "release/source/index.js",
   "types": "release/types/index.d.ts",
   "keywords": [
@@ -30,7 +30,7 @@
     "@singleware/ui-control": "^1.1.10"
   },
   "devDependencies": {
-    "prettier": "^1.15.3",
+    "prettier": "^1.16.4",
     "typescript": "^2.9.2"
   },
   "prettier": {
@@ -41,10 +41,10 @@
   },
   "scripts": {
     "build": "npm run make && npm run update",
-    "make": "tsc",
+    "make": "npx tsc -p ./source",
     "update": "npm run update-base && npm run update-render && npm run update-internals",
     "update-base": "cp -Rf ./source/*.d.ts ./release/types",
     "update-internals": "cp -Rf ./source/internals/*.d.ts ./release/types/internals",
-    "update-render": "cp -Rf ./source/render/*.d.ts ./release/types/render"
+    "update-render": "cp -Rf ./source/rendering/*.d.ts ./release/types/rendering"
   }
 }

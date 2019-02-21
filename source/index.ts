@@ -13,5 +13,5 @@ export { Option } from './option';
 import * as Internals from './internals';
 export import Internals = Internals;
 
-import * as Render from './render';
-export import Render = Render;
+import * as Rendering from './rendering';
+export import Rendering = Rendering;

@@ -4,7 +4,7 @@
  */
 
 /**
- * Option entity interface.
+ * Option interface.
  */
 export interface Option {
   /**

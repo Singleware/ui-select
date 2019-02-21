@@ -6,7 +6,7 @@ import * as Class from '@singleware/class';
 import * as JSX from '@singleware/jsx';
 import * as Control from '@singleware/ui-control';
 
-import * as Render from './render';
+import * as Rendering from './rendering';
 import * as Internals from './internals';
 
 import { Stylesheet } from './stylesheet';
@@ -207,8 +207,8 @@ export class Element extends Control.Element {
    */
   @Class.Private()
   private renderOptionElement(option: Internals.Option): HTMLElement | undefined {
-    const detail = { option: option, element: void 0 } as Render.Option;
-    const event = new CustomEvent<Render.Option>('renderoption', { bubbles: true, cancelable: true, detail: detail });
+    const detail = { option: option, element: void 0 } as Rendering.Option;
+    const event = new CustomEvent<Rendering.Option>('renderoption', { bubbles: true, cancelable: true, detail: detail });
     if (this.dispatchEvent(event)) {
       return (
         <div class="option" onClick={this.optionClickHandler.bind(this, option)}>
@@ -226,8 +226,8 @@ export class Element extends Control.Element {
    */
   @Class.Private()
   private renderSelectionElement(option: Internals.Option): HTMLElement | undefined {
-    const detail = { option: option, element: void 0 } as Render.Option;
-    const event = new CustomEvent<Render.Option>('renderselection', { bubbles: true, cancelable: true, detail: detail });
+    const detail = { option: option, element: void 0 } as Rendering.Option;
+    const event = new CustomEvent<Rendering.Option>('renderselection', { bubbles: true, cancelable: true, detail: detail });
     if (this.dispatchEvent(event)) {
       return <div class="selection">{detail.element || option.label || option.value}</div> as HTMLElement;
     }
@@ -241,8 +241,8 @@ export class Element extends Control.Element {
    */
   @Class.Private()
   private renderGroupElement(group: Internals.Group): HTMLElement | undefined {
-    const detail = { group: group, element: void 0 } as Render.Group;
-    const event = new CustomEvent<Render.Group>('rendergroup', { bubbles: true, cancelable: true, detail: detail });
+    const detail = { group: group, element: void 0 } as Rendering.Group;
+    const event = new CustomEvent<Rendering.Group>('rendergroup', { bubbles: true, cancelable: true, detail: detail });
     if (this.dispatchEvent(event)) {
       return <div class="group">{detail.element || group.label}</div> as HTMLElement;
     }
@@ -358,9 +358,7 @@ export class Element extends Control.Element {
     } else if (input instanceof HTMLInputElement) {
       input.value = this.defaultText;
     }
-    if (this.selectedElement) {
-      delete this.selectedElement.dataset.selected;
-    }
+    delete (this.selectedElement as HTMLElement).dataset.selected;
     this.selectedOption = void 0;
     this.selectedElement = void 0;
   }
@@ -576,8 +574,10 @@ export class Element extends Control.Element {
    */
   public set value(value: string | undefined) {
     if (value === void 0 || !this.selectOptionByValue(value)) {
-      this.unselectOption();
-      this.updateValidation();
+      if (this.selectedOption) {
+        this.unselectOption();
+        this.updateValidation();
+      }
     }
   }
 
@@ -730,9 +730,11 @@ export class Element extends Control.Element {
    */
   @Class.Public()
   public clear(): void {
+    if (this.selectedOption) {
+      this.unselectOption();
+      this.updateValidation();
+    }
     this.optionsList = [];
-    this.unselectOption();
-    this.updateValidation();
     this.updatePropertyState('found', false);
     JSX.clear(this.getRequiredChildElement(this.resultSlot));
   }

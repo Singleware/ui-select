@@ -4,7 +4,7 @@
  */
 
 /**
- * Metadata entity interface.
+ * Internal metadata interface.
  */
 export interface Metadata {
   /**
