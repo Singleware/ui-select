@@ -26,6 +26,10 @@ export interface Properties {
    */
   value?: string;
   /**
+   * Select default value.
+   */
+  defaultValue?: string;
+  /**
    * Determines whether the select options can be searchable or not.
    */
   searchable?: boolean;

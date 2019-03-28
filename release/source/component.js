@@ -250,9 +250,18 @@ let Component = class Component extends Control.Component {
      * @param value Option value.
      * @param label Option label.
      * @param data Option metadata.
+     * @returns Returns true when the option has been added, false otherwise.
      */
     addOption(value, label, data = {}) {
-        this.skeleton.addOption(value, label, data);
+        return this.skeleton.addOption(value, label, data);
+    }
+    /**
+     * Removes all the options that corresponds to the specified option value.
+     * @param value Option value.
+     * @returns Returns true when some option was removed or false otherwise.
+     */
+    removeOption(value) {
+        return this.skeleton.removeOption(value);
     }
     /**
      * Clear all options.
@@ -357,6 +366,9 @@ __decorate([
 __decorate([
     Class.Public()
 ], Component.prototype, "addOption", null);
+__decorate([
+    Class.Public()
+], Component.prototype, "removeOption", null);
 __decorate([
     Class.Public()
 ], Component.prototype, "clear", null);

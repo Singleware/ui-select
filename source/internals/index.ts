@@ -7,3 +7,4 @@
 export { Group } from './group';
 export { Option } from './option';
 export { Metadata } from './metadata';
+export { Map } from './map';

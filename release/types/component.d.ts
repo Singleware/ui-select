@@ -146,8 +146,15 @@ export declare class Component<T extends Properties = Properties> extends Contro
      * @param value Option value.
      * @param label Option label.
      * @param data Option metadata.
+     * @returns Returns true when the option has been added, false otherwise.
      */
-    addOption(value: string, label: string, data?: Internals.Metadata): void;
+    addOption(value: string, label: string, data?: Internals.Metadata): boolean;
+    /**
+     * Removes all the options that corresponds to the specified option value.
+     * @param value Option value.
+     * @returns Returns true when some option was removed or false otherwise.
+     */
+    removeOption(value: string): boolean;
     /**
      * Clear all options.
      */

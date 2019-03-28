@@ -5,10 +5,6 @@ import * as Internals from './internals';
  */
 export declare class Element extends Control.Element {
     /**
-     * Default value for resets.
-     */
-    defaultValue: any;
-    /**
      * Default text for no selections in the text input.
      */
     private defaultText;
@@ -17,9 +13,9 @@ export declare class Element extends Control.Element {
      */
     private defaultNodes;
     /**
-     * List of options.
+     * Map of options.
      */
-    private optionsList;
+    private optionsMap;
     /**
      * List of active options.
      */
@@ -197,7 +193,7 @@ export declare class Element extends Control.Element {
     /**
      * Gets the current search text.
      */
-    readonly search: string | undefined;
+    readonly search: string;
     /**
      * Gets the opened state.
      */
@@ -207,7 +203,7 @@ export declare class Element extends Control.Element {
      */
     readonly found: boolean;
     /**
-     * Gets the total number of options.
+     * Gets the number of active options.
      */
     readonly count: number;
     /**
@@ -228,6 +224,10 @@ export declare class Element extends Control.Element {
     * Sets the element value.
     */
     value: string | undefined;
+    /**
+     * Default value for resets.
+     */
+    defaultValue: any;
     /**
      * Gets the searchable state of the element.
      */
@@ -285,8 +285,15 @@ export declare class Element extends Control.Element {
      * @param value Option value.
      * @param label Option label.
      * @param metadata Option metadata.
+     * @returns Returns true when the option has been added, false otherwise.
      */
-    addOption(value: string, label: string, data?: Internals.Metadata): void;
+    addOption(value: string, label: string, data?: Internals.Metadata): boolean;
+    /**
+     * Remove all the options that corresponds to the specified option value.
+     * @param value Option value.
+     * @returns Returns true when some option was removed or false otherwise.
+     */
+    removeOption(value: string): boolean;
     /**
      * Clear all options.
      */

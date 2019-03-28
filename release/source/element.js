@@ -32,9 +32,9 @@ let Element = class Element extends Control.Element {
          */
         this.defaultNodes = [];
         /**
-         * List of options.
+         * Map of options.
          */
-        this.optionsList = [];
+        this.optionsMap = {};
         /**
          * List of active options.
          */
@@ -127,23 +127,26 @@ let Element = class Element extends Control.Element {
         const result = JSX.clear(this.getRequiredChildElement(this.resultSlot));
         const search = this.search;
         this.activatedList = [];
-        for (const option of this.optionsList) {
-            let element = this.optionElementMap.get(option);
-            if (search === void 0 || option.tags.find(tag => tag.includes(search))) {
-                this.activatedList.push(option);
-                if (option.group) {
-                    const group = this.groupsMap.get(option.group);
-                    if (group) {
-                        element = JSX.append(this.groupElementMap.get(group), element);
+        for (const value in this.optionsMap) {
+            const options = this.optionsMap[value];
+            for (const option of options) {
+                let element = this.optionElementMap.get(option);
+                if (search.length === 0 || option.tags.find(tag => tag.includes(search))) {
+                    this.activatedList.push(option);
+                    if (option.group) {
+                        const group = this.groupsMap.get(option.group);
+                        if (group) {
+                            element = JSX.append(this.groupElementMap.get(group), element);
+                        }
+                        else {
+                            console.warn(`Option group '${option.group}' does not exists.`);
+                        }
                     }
-                    else {
-                        console.warn(`Option group '${option.group}' does not exists.`);
-                    }
+                    JSX.append(result, element);
                 }
-                JSX.append(result, element);
-            }
-            else if (option.group) {
-                element.remove();
+                else if (option.group) {
+                    element.remove();
+                }
             }
         }
         if (this.selectedElement) {
@@ -212,11 +215,11 @@ let Element = class Element extends Control.Element {
      * @returns Returns true when an option was selected, false otherwise.
      */
     selectOptionByValue(value) {
-        for (const option of this.optionsList) {
-            if (option.value === value) {
-                if (option !== this.selectedOption) {
-                    this.selectOption(option);
-                }
+        const options = this.optionsMap[value];
+        if (options) {
+            const option = options[0];
+            if (option !== void 0 && option !== this.selectedOption) {
+                this.selectOption(option);
                 return true;
             }
         }
@@ -413,7 +416,7 @@ let Element = class Element extends Control.Element {
      * Gets the current search text.
      */
     get search() {
-        return this.searchable ? this.getRequiredChildElement(this.searchSlot).value : void 0;
+        return this.searchable ? this.getRequiredChildElement(this.searchSlot).value : '';
     }
     /**
      * Gets the opened state.
@@ -428,10 +431,10 @@ let Element = class Element extends Control.Element {
         return this.hasAttribute('found');
     }
     /**
-     * Gets the total number of options.
+     * Gets the number of active options.
      */
     get count() {
-        return this.optionsList.length;
+        return this.activatedList.length;
     }
     /**
      * Determines whether the element is empty or not.
@@ -529,14 +532,7 @@ let Element = class Element extends Control.Element {
      * Reset the element value to its initial value.
      */
     reset() {
-        const input = this.getRequiredChildElement(this.inputSlot);
-        if (input.reset instanceof Function) {
-            input.reset();
-        }
-        else if ('value' in input) {
-            input.value = input.defaultValue;
-        }
-        this.updateValidation();
+        this.value = this.defaultValue;
     }
     /**
      * Checks the element validity.
@@ -572,21 +568,40 @@ let Element = class Element extends Control.Element {
      * @param value Option value.
      * @param label Option label.
      * @param metadata Option metadata.
+     * @returns Returns true when the option has been added, false otherwise.
      */
     addOption(value, label, data = {}) {
         const option = {
             value: value,
             label: label,
             group: data.group,
-            tags: (data.tags || [label || value]).map((tag) => tag.toLocaleLowerCase()),
+            tags: (data.tags || [label || value || '']).map((tag) => tag.toLocaleLowerCase()),
             custom: data.custom || {}
         };
         const element = this.renderOptionElement(option);
         if (element) {
+            if (!(this.optionsMap[value] instanceof Array)) {
+                this.optionsMap[value] = [];
+            }
+            this.optionsMap[value].push(option);
             this.optionElementMap.set(option, element);
-            this.optionsList.push(option);
             this.updateResultList();
+            return true;
         }
+        return false;
+    }
+    /**
+     * Remove all the options that corresponds to the specified option value.
+     * @param value Option value.
+     * @returns Returns true when some option was removed or false otherwise.
+     */
+    removeOption(value) {
+        if (this.optionsMap[value]) {
+            delete this.optionsMap[value];
+            this.updateResultList();
+            return true;
+        }
+        return false;
     }
     /**
      * Clear all options.
@@ -596,7 +611,7 @@ let Element = class Element extends Control.Element {
             this.unselectOption();
             this.updateValidation();
         }
-        this.optionsList = [];
+        this.optionsMap = {};
         this.updatePropertyState('found', false);
         JSX.clear(this.getRequiredChildElement(this.resultSlot));
     }
@@ -642,9 +657,6 @@ let Element = class Element extends Control.Element {
     }
 };
 __decorate([
-    Class.Public()
-], Element.prototype, "defaultValue", void 0);
-__decorate([
     Class.Private()
 ], Element.prototype, "defaultText", void 0);
 __decorate([
@@ -652,7 +664,7 @@ __decorate([
 ], Element.prototype, "defaultNodes", void 0);
 __decorate([
     Class.Private()
-], Element.prototype, "optionsList", void 0);
+], Element.prototype, "optionsMap", void 0);
 __decorate([
     Class.Private()
 ], Element.prototype, "activatedList", void 0);
@@ -790,6 +802,9 @@ __decorate([
 ], Element.prototype, "value", null);
 __decorate([
     Class.Public()
+], Element.prototype, "defaultValue", void 0);
+__decorate([
+    Class.Public()
 ], Element.prototype, "searchable", null);
 __decorate([
     Class.Public()
@@ -818,6 +833,9 @@ __decorate([
 __decorate([
     Class.Public()
 ], Element.prototype, "addOption", null);
+__decorate([
+    Class.Public()
+], Element.prototype, "removeOption", null);
 __decorate([
     Class.Public()
 ], Element.prototype, "clear", null);

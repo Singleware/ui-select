@@ -18,12 +18,6 @@ import { Stylesheet } from './stylesheet';
 @Class.Describe()
 export class Element extends Control.Element {
   /**
-   * Default value for resets.
-   */
-  @Class.Public()
-  public defaultValue: any;
-
-  /**
    * Default text for no selections in the text input.
    */
   @Class.Private()
@@ -36,10 +30,10 @@ export class Element extends Control.Element {
   private defaultNodes = [] as Node[];
 
   /**
-   * List of options.
+   * Map of options.
    */
   @Class.Private()
-  private optionsList = [] as Internals.Option[];
+  private optionsMap = {} as Internals.Map;
 
   /**
    * List of active options.
@@ -177,21 +171,24 @@ export class Element extends Control.Element {
     const result = JSX.clear(this.getRequiredChildElement(this.resultSlot)) as HTMLElement;
     const search = this.search;
     this.activatedList = [];
-    for (const option of this.optionsList) {
-      let element = this.optionElementMap.get(option) as HTMLElement;
-      if (search === void 0 || option.tags.find(tag => tag.includes(search))) {
-        this.activatedList.push(option);
-        if (option.group) {
-          const group = this.groupsMap.get(option.group) as Internals.Group;
-          if (group) {
-            element = JSX.append(this.groupElementMap.get(group) as HTMLElement, element) as HTMLElement;
-          } else {
-            console.warn(`Option group '${option.group}' does not exists.`);
+    for (const value in this.optionsMap) {
+      const options = this.optionsMap[value] as Internals.Option[];
+      for (const option of options) {
+        let element = this.optionElementMap.get(option) as HTMLElement;
+        if (search.length === 0 || option.tags.find(tag => tag.includes(search))) {
+          this.activatedList.push(option);
+          if (option.group) {
+            const group = this.groupsMap.get(option.group) as Internals.Group;
+            if (group) {
+              element = JSX.append(this.groupElementMap.get(group) as HTMLElement, element) as HTMLElement;
+            } else {
+              console.warn(`Option group '${option.group}' does not exists.`);
+            }
           }
+          JSX.append(result, element);
+        } else if (option.group) {
+          element.remove();
         }
-        JSX.append(result, element);
-      } else if (option.group) {
-        element.remove();
       }
     }
     if (this.selectedElement) {
@@ -274,11 +271,11 @@ export class Element extends Control.Element {
    */
   @Class.Private()
   private selectOptionByValue(value: string): boolean {
-    for (const option of this.optionsList) {
-      if (option.value === value) {
-        if (option !== this.selectedOption) {
-          this.selectOption(option);
-        }
+    const options = this.optionsMap[value];
+    if (options) {
+      const option = options[0] as Internals.Option;
+      if (option !== void 0 && option !== this.selectedOption) {
+        this.selectOption(option);
         return true;
       }
     }
@@ -509,8 +506,8 @@ export class Element extends Control.Element {
    * Gets the current search text.
    */
   @Class.Public()
-  public get search(): string | undefined {
-    return this.searchable ? (this.getRequiredChildElement(this.searchSlot) as any).value : void 0;
+  public get search(): string {
+    return this.searchable ? (this.getRequiredChildElement(this.searchSlot) as any).value : '';
   }
 
   /**
@@ -530,11 +527,11 @@ export class Element extends Control.Element {
   }
 
   /**
-   * Gets the total number of options.
+   * Gets the number of active options.
    */
   @Class.Public()
   public get count(): number {
-    return this.optionsList.length;
+    return this.activatedList.length;
   }
 
   /**
@@ -580,6 +577,12 @@ export class Element extends Control.Element {
       }
     }
   }
+
+  /**
+   * Default value for resets.
+   */
+  @Class.Public()
+  public defaultValue: any;
 
   /**
    * Gets the searchable state of the element.
@@ -656,13 +659,7 @@ export class Element extends Control.Element {
    */
   @Class.Public()
   public reset(): void {
-    const input = this.getRequiredChildElement(this.inputSlot) as any;
-    if (input.reset instanceof Function) {
-      input.reset();
-    } else if ('value' in input) {
-      input.value = input.defaultValue;
-    }
-    this.updateValidation();
+    this.value = this.defaultValue;
   }
 
   /**
@@ -707,22 +704,43 @@ export class Element extends Control.Element {
    * @param value Option value.
    * @param label Option label.
    * @param metadata Option metadata.
+   * @returns Returns true when the option has been added, false otherwise.
    */
   @Class.Public()
-  public addOption(value: string, label: string, data: Internals.Metadata = {}): void {
+  public addOption(value: string, label: string, data: Internals.Metadata = {}): boolean {
     const option = {
       value: value,
       label: label,
       group: data.group,
-      tags: (data.tags || [label || value]).map((tag: string) => tag.toLocaleLowerCase()),
+      tags: (data.tags || [label || value || '']).map((tag: string) => tag.toLocaleLowerCase()),
       custom: data.custom || {}
     };
     const element = this.renderOptionElement(option);
     if (element) {
+      if (!(this.optionsMap[value] instanceof Array)) {
+        this.optionsMap[value] = [];
+      }
+      this.optionsMap[value].push(option);
       this.optionElementMap.set(option, element);
-      this.optionsList.push(option);
       this.updateResultList();
+      return true;
     }
+    return false;
+  }
+
+  /**
+   * Remove all the options that corresponds to the specified option value.
+   * @param value Option value.
+   * @returns Returns true when some option was removed or false otherwise.
+   */
+  @Class.Public()
+  public removeOption(value: string): boolean {
+    if (this.optionsMap[value]) {
+      delete this.optionsMap[value];
+      this.updateResultList();
+      return true;
+    }
+    return false;
   }
 
   /**
@@ -734,7 +752,7 @@ export class Element extends Control.Element {
       this.unselectOption();
       this.updateValidation();
     }
-    this.optionsList = [];
+    this.optionsMap = {};
     this.updatePropertyState('found', false);
     JSX.clear(this.getRequiredChildElement(this.resultSlot));
   }

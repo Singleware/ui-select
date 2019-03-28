@@ -323,10 +323,21 @@ export class Component<T extends Properties = Properties> extends Control.Compon
    * @param value Option value.
    * @param label Option label.
    * @param data Option metadata.
+   * @returns Returns true when the option has been added, false otherwise.
    */
   @Class.Public()
-  public addOption(value: string, label: string, data: Internals.Metadata = {}): void {
-    this.skeleton.addOption(value, label, data);
+  public addOption(value: string, label: string, data: Internals.Metadata = {}): boolean {
+    return this.skeleton.addOption(value, label, data);
+  }
+
+  /**
+   * Removes all the options that corresponds to the specified option value.
+   * @param value Option value.
+   * @returns Returns true when some option was removed or false otherwise.
+   */
+  @Class.Public()
+  public removeOption(value: string): boolean {
+    return this.skeleton.removeOption(value);
   }
 
   /**
