@@ -218,8 +218,10 @@ let Element = class Element extends Control.Element {
         const options = this.optionsMap[value];
         if (options) {
             const option = options[0];
-            if (option !== void 0 && option !== this.selectedOption) {
-                this.selectOption(option);
+            if (option !== void 0) {
+                if (option !== this.selectedOption) {
+                    this.selectOption(option);
+                }
                 return true;
             }
         }
