@@ -60,6 +60,7 @@ export class Stylesheet extends OSS.Stylesheet {
     ':host([searchable][opened])>.select>.field>.input::slotted(*)',
     ':host([searchable]:not([opened]))>.select>.field>.search::slotted(*)',
     ':host(:not([searchable]))>.select>.field>.search::slotted(*)',
+    ':host(:not([searchable]))>.select>.empty::slotted(*)',
     ':host(:not([opened]))>.select>.result::slotted(*)',
     ':host(:not([found]))>.select>.result::slotted(*)',
     ':host(:not([opened]))>.select>.empty::slotted(*)',
