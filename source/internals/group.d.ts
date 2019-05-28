@@ -14,5 +14,5 @@ export interface Group {
   /**
    * Group label.
    */
-  label: string;
+  label: string | JSX.Element;
 }

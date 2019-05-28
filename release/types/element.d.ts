@@ -1,3 +1,4 @@
+import * as JSX from '@singleware/jsx';
 import * as Control from '@singleware/ui-control';
 import * as Internals from './internals';
 /**
@@ -21,17 +22,17 @@ export declare class Element extends Control.Element {
      */
     private activatedList;
     /**
-     * Map of option element by option entity.
-     */
-    private optionElementMap;
-    /**
-     * Map of group entity by name.
+     * Map of entity group by name.
      */
     private groupsMap;
     /**
-     * Map of group element by group entity.
+     * Map of element group by entity group.
      */
     private groupElementMap;
+    /**
+     * Map of element option by entity option.
+     */
+    private optionElementMap;
     /**
      * Current option selected.
      */
@@ -144,6 +145,20 @@ export declare class Element extends Control.Element {
      * Unselects the current selected option.
      */
     private unselectOption;
+    /**
+     * Opens the option list result.
+     */
+    private openList;
+    /**
+     * Closes the option list result.
+     */
+    private closeList;
+    /**
+     * Gets the normalized tag list based on the specified input tags.
+     * @param inputs Input tags.
+     * @returns Returns the generated tag list.
+     */
+    private getTagList;
     /**
      * Option click, event handler.
      * @param option Option entity.
@@ -270,7 +285,7 @@ export declare class Element extends Control.Element {
      */
     checkValidity(): boolean;
     /**
-     * Set the element's custom validity error message.
+     * Sets the element custom validity error message.
      * @param error Custom error message.
      */
     setCustomValidity(error?: string): void;
@@ -279,17 +294,17 @@ export declare class Element extends Control.Element {
      * @param name Group name.
      * @param label Group label.
      */
-    addGroup(name: string, label: string): void;
+    addGroup(name: string, label: string | JSX.Element): void;
     /**
      * Adds the specified option into the options list.
      * @param value Option value.
      * @param label Option label.
-     * @param metadata Option metadata.
+     * @param data Option metadata.
      * @returns Returns true when the option has been added, false otherwise.
      */
-    addOption(value: string, label: string, data?: Internals.Metadata): boolean;
+    addOption(value: string, label: string | JSX.Element, data?: Internals.Metadata): boolean;
     /**
-     * Remove all the options that corresponds to the specified option value.
+     * Remove all options that corresponds to the specified option value.
      * @param value Option value.
      * @returns Returns true when some option was removed or false otherwise.
      */
@@ -300,12 +315,14 @@ export declare class Element extends Control.Element {
     clear(): void;
     /**
      * Opens the options list.
+     * @returns Returns true when the options list was closed, false otherwise.
      */
-    open(): void;
+    open(): boolean;
     /**
      * Closes the options list.
+     * @returns Returns true when the options list was closed, false otherwise.
      */
-    close(): void;
+    close(): boolean;
     /**
      * Toggles the options list.
      */

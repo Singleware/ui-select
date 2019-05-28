@@ -314,7 +314,7 @@ export class Component<T extends Properties = Properties> extends Control.Compon
    * @param label Group label.
    */
   @Class.Public()
-  public addGroup(name: string, label: string): void {
+  public addGroup(name: string, label: string | JSX.Element): void {
     this.skeleton.addGroup(name, label);
   }
 
@@ -326,7 +326,7 @@ export class Component<T extends Properties = Properties> extends Control.Compon
    * @returns Returns true when the option has been added, false otherwise.
    */
   @Class.Public()
-  public addOption(value: string, label: string, data: Internals.Metadata = {}): boolean {
+  public addOption(value: string, label: string | JSX.Element, data: Internals.Metadata = {}): boolean {
     return this.skeleton.addOption(value, label, data);
   }
 

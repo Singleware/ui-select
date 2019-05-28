@@ -54,6 +54,7 @@ let Stylesheet = class Stylesheet extends OSS.Stylesheet {
          */
         this.slottedHidden = this.select(':host([searchable][opened])>.select>.field>.input::slotted(*)', ':host([searchable]:not([opened]))>.select>.field>.search::slotted(*)', ':host(:not([searchable]))>.select>.field>.search::slotted(*)', ':host(:not([searchable]))>.select>.empty::slotted(*)', ':host(:not([opened]))>.select>.result::slotted(*)', ':host(:not([found]))>.select>.result::slotted(*)', ':host(:not([opened]))>.select>.empty::slotted(*)', ':host([opened][found])>.select>.empty::slotted(*)');
         this.element.display = 'flex';
+        this.element.position = 'relative';
         this.element.flexDirection = 'column';
         this.element.position = 'relative';
         this.element.height = 'inherit';

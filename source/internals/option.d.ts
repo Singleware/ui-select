@@ -11,7 +11,7 @@ export interface Option {
   /**
    * Option label.
    */
-  label: string;
+  label: string | JSX.Element;
   /**
    * Option value.
    */

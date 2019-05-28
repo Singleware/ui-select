@@ -6,6 +6,8 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var Element_1;
+"use strict";
 /**
  * Copyright (C) 2018 Silas B. Domingos
  * This source code is licensed under the MIT License as described in the file LICENSE.
@@ -17,7 +19,7 @@ const stylesheet_1 = require("./stylesheet");
 /**
  * Select element.
  */
-let Element = class Element extends Control.Element {
+let Element = Element_1 = class Element extends Control.Element {
     /**
      * Default constructor.
      */
@@ -40,17 +42,17 @@ let Element = class Element extends Control.Element {
          */
         this.activatedList = [];
         /**
-         * Map of option element by option entity.
+         * Map of entity group by name.
          */
-        this.optionElementMap = new WeakMap();
+        this.groupsMap = {};
         /**
-         * Map of group entity by name.
-         */
-        this.groupsMap = new Map();
-        /**
-         * Map of group element by group entity.
+         * Map of element group by entity group.
          */
         this.groupElementMap = new WeakMap();
+        /**
+         * Map of element option by entity option.
+         */
+        this.optionElementMap = new WeakMap();
         /**
          * Determines whether the result or empty element slot can be closed or not.
          */
@@ -134,12 +136,12 @@ let Element = class Element extends Control.Element {
                 if (search.length === 0 || option.tags.find(tag => tag.includes(search))) {
                     this.activatedList.push(option);
                     if (option.group) {
-                        const group = this.groupsMap.get(option.group);
+                        const group = this.groupsMap[option.group];
                         if (group) {
                             element = JSX.append(this.groupElementMap.get(group), element);
                         }
                         else {
-                            console.warn(`Option group '${option.group}' does not exists.`);
+                            console.warn(`Option group '${option.group}' wasn't found.`);
                         }
                     }
                     JSX.append(result, element);
@@ -276,7 +278,7 @@ let Element = class Element extends Control.Element {
         let index = this.activatedList.indexOf(this.selectedOption);
         for (let l = 0; l < this.activatedList.length; ++l) {
             const option = this.activatedList[++index % this.activatedList.length];
-            if (option.tags.find(tag => tag.indexOf(search) === 0)) {
+            if (option.tags.find(tag => tag.includes(search))) {
                 return this.selectOptionAndNotify(option);
             }
         }
@@ -298,6 +300,50 @@ let Element = class Element extends Control.Element {
         this.selectedElement = void 0;
     }
     /**
+     * Opens the option list result.
+     */
+    openList() {
+        if (this.searchable) {
+            const search = this.getRequiredChildElement(this.searchSlot);
+            if (search.reset instanceof Function) {
+                search.reset();
+            }
+            else if ('value' in search) {
+                search.value = search.defaultValue;
+            }
+            if (search.focus instanceof Function) {
+                search.focus();
+            }
+            this.canClose = false;
+        }
+        this.updateResultList();
+        this.updatePropertyState('opened', true);
+    }
+    /**
+     * Closes the option list result.
+     */
+    closeList() {
+        this.updatePropertyState('found', false);
+        this.updatePropertyState('opened', false);
+    }
+    /**
+     * Gets the normalized tag list based on the specified input tags.
+     * @param inputs Input tags.
+     * @returns Returns the generated tag list.
+     */
+    getTagList(inputs) {
+        const tags = [];
+        for (const input of inputs) {
+            if (input instanceof Element_1) {
+                tags.push(input.innerText.toLocaleLowerCase());
+            }
+            else if (input !== void 0) {
+                tags.push(input.toLocaleLowerCase());
+            }
+        }
+        return tags;
+    }
+    /**
      * Option click, event handler.
      * @param option Option entity.
      */
@@ -311,9 +357,10 @@ let Element = class Element extends Control.Element {
      */
     optionKeydownHandler(event) {
         if (event.code === 'Space') {
-            event.preventDefault();
-            this.open();
-            this.focus();
+            if (this.open()) {
+                event.preventDefault();
+                this.focus();
+            }
         }
         else if (event.code === 'Enter') {
             event.preventDefault();
@@ -545,7 +592,7 @@ let Element = class Element extends Control.Element {
             this.callRequiredChildMethod(this.inputSlot, 'checkValidity', []) !== false);
     }
     /**
-     * Set the element's custom validity error message.
+     * Sets the element custom validity error message.
      * @param error Custom error message.
      */
     setCustomValidity(error) {
@@ -560,7 +607,7 @@ let Element = class Element extends Control.Element {
         const group = { name: name, label: label };
         const element = this.renderGroupElement(group);
         if (element) {
-            this.groupsMap.set(name, group);
+            this.groupsMap[name] = group;
             this.groupElementMap.set(group, element);
             this.updateResultList();
         }
@@ -569,7 +616,7 @@ let Element = class Element extends Control.Element {
      * Adds the specified option into the options list.
      * @param value Option value.
      * @param label Option label.
-     * @param metadata Option metadata.
+     * @param data Option metadata.
      * @returns Returns true when the option has been added, false otherwise.
      */
     addOption(value, label, data = {}) {
@@ -577,7 +624,7 @@ let Element = class Element extends Control.Element {
             value: value,
             label: label,
             group: data.group,
-            tags: (data.tags || [label || value || '']).map((tag) => tag.toLocaleLowerCase()),
+            tags: this.getTagList(data.tags || [label]),
             custom: data.custom || {}
         };
         const element = this.renderOptionElement(option);
@@ -593,12 +640,16 @@ let Element = class Element extends Control.Element {
         return false;
     }
     /**
-     * Remove all the options that corresponds to the specified option value.
+     * Remove all options that corresponds to the specified option value.
      * @param value Option value.
      * @returns Returns true when some option was removed or false otherwise.
      */
     removeOption(value) {
-        if (this.optionsMap[value]) {
+        const options = this.optionsMap[value];
+        if (options) {
+            for (const option of options) {
+                this.optionElementMap.get(option).remove();
+            }
             delete this.optionsMap[value];
             this.updateResultList();
             return true;
@@ -613,48 +664,45 @@ let Element = class Element extends Control.Element {
             this.unselectOption();
             this.updateValidation();
         }
+        for (const value in this.optionsMap) {
+            const options = this.optionsMap[value];
+            for (const option of options) {
+                this.optionElementMap.get(option).remove();
+            }
+        }
         this.optionsMap = {};
         this.updatePropertyState('found', false);
         JSX.clear(this.getRequiredChildElement(this.resultSlot));
     }
     /**
      * Opens the options list.
+     * @returns Returns true when the options list was closed, false otherwise.
      */
     open() {
-        if (!this.readOnly && !this.disabled) {
-            if (this.searchable) {
-                const search = this.getRequiredChildElement(this.searchSlot);
-                if (search.reset instanceof Function) {
-                    search.reset();
-                }
-                else if ('value' in search) {
-                    search.value = search.defaultValue;
-                }
-                if (search.focus instanceof Function) {
-                    search.focus();
-                }
-                this.canClose = false;
-            }
-            this.updateResultList();
-            this.updatePropertyState('opened', true);
+        if (!this.readOnly && !this.disabled && !this.opened) {
+            return this.openList(), true;
         }
+        return false;
     }
     /**
      * Closes the options list.
+     * @returns Returns true when the options list was closed, false otherwise.
      */
     close() {
-        this.updatePropertyState('found', false);
-        this.updatePropertyState('opened', false);
+        if (this.opened) {
+            return this.closeList(), true;
+        }
+        return false;
     }
     /**
      * Toggles the options list.
      */
     toggle() {
         if (this.opened) {
-            this.close();
+            this.closeList();
         }
         else {
-            this.open();
+            this.openList();
         }
     }
 };
@@ -672,13 +720,13 @@ __decorate([
 ], Element.prototype, "activatedList", void 0);
 __decorate([
     Class.Private()
-], Element.prototype, "optionElementMap", void 0);
-__decorate([
-    Class.Private()
 ], Element.prototype, "groupsMap", void 0);
 __decorate([
     Class.Private()
 ], Element.prototype, "groupElementMap", void 0);
+__decorate([
+    Class.Private()
+], Element.prototype, "optionElementMap", void 0);
 __decorate([
     Class.Private()
 ], Element.prototype, "selectedOption", void 0);
@@ -751,6 +799,15 @@ __decorate([
 __decorate([
     Class.Private()
 ], Element.prototype, "unselectOption", null);
+__decorate([
+    Class.Private()
+], Element.prototype, "openList", null);
+__decorate([
+    Class.Private()
+], Element.prototype, "closeList", null);
+__decorate([
+    Class.Private()
+], Element.prototype, "getTagList", null);
 __decorate([
     Class.Private()
 ], Element.prototype, "optionClickHandler", null);
@@ -850,7 +907,7 @@ __decorate([
 __decorate([
     Class.Public()
 ], Element.prototype, "toggle", null);
-Element = __decorate([
+Element = Element_1 = __decorate([
     JSX.Describe('swe-select'),
     Class.Describe()
 ], Element);

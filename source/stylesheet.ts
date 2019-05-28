@@ -73,6 +73,7 @@ export class Stylesheet extends OSS.Stylesheet {
   constructor() {
     super();
     this.element.display = 'flex';
+    this.element.position = 'relative';
     this.element.flexDirection = 'column';
     this.element.position = 'relative';
     this.element.height = 'inherit';

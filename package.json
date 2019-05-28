@@ -7,7 +7,7 @@
   "name": "@singleware/ui-select",
   "description": "Singleware UI select package.",
   "license": "MIT",
-  "version": "1.1.25",
+  "version": "1.1.28",
   "main": "release/source/index.js",
   "types": "release/types/index.d.ts",
   "keywords": [
@@ -25,12 +25,12 @@
   },
   "dependencies": {
     "@singleware/class": "^1.1.19",
-    "@singleware/jsx": "^1.0.20",
-    "@singleware/oss": "^1.0.2",
+    "@singleware/jsx": "^1.0.27",
+    "@singleware/oss": "^1.0.3",
     "@singleware/ui-control": "^1.1.10"
   },
   "devDependencies": {
-    "prettier": "^1.16.4",
+    "prettier": "^1.17.1",
     "typescript": "^2.9.2"
   },
   "prettier": {

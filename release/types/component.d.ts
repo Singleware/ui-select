@@ -1,3 +1,4 @@
+import * as JSX from '@singleware/jsx';
 import * as Control from '@singleware/ui-control';
 import * as Internals from './internals';
 import { Properties } from './properties';
@@ -140,7 +141,7 @@ export declare class Component<T extends Properties = Properties> extends Contro
      * @param name Group name.
      * @param label Group label.
      */
-    addGroup(name: string, label: string): void;
+    addGroup(name: string, label: string | JSX.Element): void;
     /**
      * Adds the specified option into the options list.
      * @param value Option value.
@@ -148,7 +149,7 @@ export declare class Component<T extends Properties = Properties> extends Contro
      * @param data Option metadata.
      * @returns Returns true when the option has been added, false otherwise.
      */
-    addOption(value: string, label: string, data?: Internals.Metadata): boolean;
+    addOption(value: string, label: string | JSX.Element, data?: Internals.Metadata): boolean;
     /**
      * Removes all the options that corresponds to the specified option value.
      * @param value Option value.

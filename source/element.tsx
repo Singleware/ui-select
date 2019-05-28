@@ -33,7 +33,7 @@ export class Element extends Control.Element {
    * Map of options.
    */
   @Class.Private()
-  private optionsMap = {} as Internals.Map;
+  private optionsMap = {} as Internals.Map<Internals.Option[]>;
 
   /**
    * List of active options.
@@ -42,22 +42,22 @@ export class Element extends Control.Element {
   private activatedList = [] as Internals.Option[];
 
   /**
-   * Map of option element by option entity.
+   * Map of entity group by name.
    */
   @Class.Private()
-  private optionElementMap = new WeakMap<Internals.Option, HTMLElement>();
+  private groupsMap = {} as Internals.Map<Internals.Group>;
 
   /**
-   * Map of group entity by name.
-   */
-  @Class.Private()
-  private groupsMap = new Map<string, Internals.Group>();
-
-  /**
-   * Map of group element by group entity.
+   * Map of element group by entity group.
    */
   @Class.Private()
   private groupElementMap = new WeakMap<Internals.Group, HTMLElement>();
+
+  /**
+   * Map of element option by entity option.
+   */
+  @Class.Private()
+  private optionElementMap = new WeakMap<Internals.Option, HTMLElement>();
 
   /**
    * Current option selected.
@@ -178,11 +178,11 @@ export class Element extends Control.Element {
         if (search.length === 0 || option.tags.find(tag => tag.includes(search))) {
           this.activatedList.push(option);
           if (option.group) {
-            const group = this.groupsMap.get(option.group) as Internals.Group;
+            const group = this.groupsMap[option.group] as Internals.Group;
             if (group) {
               element = JSX.append(this.groupElementMap.get(group) as HTMLElement, element) as HTMLElement;
             } else {
-              console.warn(`Option group '${option.group}' does not exists.`);
+              console.warn(`Option group '${option.group}' wasn't found.`);
             }
           }
           JSX.append(result, element);
@@ -339,7 +339,7 @@ export class Element extends Control.Element {
     let index = this.activatedList.indexOf(this.selectedOption as Internals.Option);
     for (let l = 0; l < this.activatedList.length; ++l) {
       const option = this.activatedList[++index % this.activatedList.length];
-      if (option.tags.find(tag => tag.indexOf(search) === 0)) {
+      if (option.tags.find(tag => tag.includes(search))) {
         return this.selectOptionAndNotify(option);
       }
     }
@@ -363,6 +363,54 @@ export class Element extends Control.Element {
   }
 
   /**
+   * Opens the option list result.
+   */
+  @Class.Private()
+  private openList(): void {
+    if (this.searchable) {
+      const search = this.getRequiredChildElement(this.searchSlot) as any;
+      if (search.reset instanceof Function) {
+        search.reset();
+      } else if ('value' in search) {
+        search.value = search.defaultValue;
+      }
+      if (search.focus instanceof Function) {
+        search.focus();
+      }
+      this.canClose = false;
+    }
+    this.updateResultList();
+    this.updatePropertyState('opened', true);
+  }
+
+  /**
+   * Closes the option list result.
+   */
+  @Class.Private()
+  private closeList(): void {
+    this.updatePropertyState('found', false);
+    this.updatePropertyState('opened', false);
+  }
+
+  /**
+   * Gets the normalized tag list based on the specified input tags.
+   * @param inputs Input tags.
+   * @returns Returns the generated tag list.
+   */
+  @Class.Private()
+  private getTagList(inputs: (string | JSX.Element | undefined)[]): string[] {
+    const tags = [];
+    for (const input of inputs) {
+      if (input instanceof Element) {
+        tags.push(input.innerText.toLocaleLowerCase());
+      } else if (input !== void 0) {
+        tags.push((input as string).toLocaleLowerCase());
+      }
+    }
+    return tags;
+  }
+
+  /**
    * Option click, event handler.
    * @param option Option entity.
    */
@@ -379,9 +427,10 @@ export class Element extends Control.Element {
   @Class.Private()
   private optionKeydownHandler(event: KeyboardEvent): void {
     if (event.code === 'Space') {
-      event.preventDefault();
-      this.open();
-      this.focus();
+      if (this.open()) {
+        event.preventDefault();
+        this.focus();
+      }
     } else if (event.code === 'Enter') {
       event.preventDefault();
       this.toggleListHandler();
@@ -677,7 +726,7 @@ export class Element extends Control.Element {
   }
 
   /**
-   * Set the element's custom validity error message.
+   * Sets the element custom validity error message.
    * @param error Custom error message.
    */
   @Class.Public()
@@ -691,11 +740,11 @@ export class Element extends Control.Element {
    * @param label Group label.
    */
   @Class.Public()
-  public addGroup(name: string, label: string): void {
+  public addGroup(name: string, label: string | JSX.Element): void {
     const group = { name: name, label: label };
     const element = this.renderGroupElement(group) as HTMLDivElement;
     if (element) {
-      this.groupsMap.set(name, group);
+      this.groupsMap[name] = group;
       this.groupElementMap.set(group, element);
       this.updateResultList();
     }
@@ -705,16 +754,16 @@ export class Element extends Control.Element {
    * Adds the specified option into the options list.
    * @param value Option value.
    * @param label Option label.
-   * @param metadata Option metadata.
+   * @param data Option metadata.
    * @returns Returns true when the option has been added, false otherwise.
    */
   @Class.Public()
-  public addOption(value: string, label: string, data: Internals.Metadata = {}): boolean {
+  public addOption(value: string, label: string | JSX.Element, data: Internals.Metadata = {}): boolean {
     const option = {
       value: value,
       label: label,
       group: data.group,
-      tags: (data.tags || [label || value || '']).map((tag: string) => tag.toLocaleLowerCase()),
+      tags: this.getTagList(data.tags || [label]),
       custom: data.custom || {}
     };
     const element = this.renderOptionElement(option);
@@ -731,13 +780,17 @@ export class Element extends Control.Element {
   }
 
   /**
-   * Remove all the options that corresponds to the specified option value.
+   * Remove all options that corresponds to the specified option value.
    * @param value Option value.
    * @returns Returns true when some option was removed or false otherwise.
    */
   @Class.Public()
   public removeOption(value: string): boolean {
-    if (this.optionsMap[value]) {
+    const options = this.optionsMap[value];
+    if (options) {
+      for (const option of options) {
+        (this.optionElementMap.get(option) as HTMLElement).remove();
+      }
       delete this.optionsMap[value];
       this.updateResultList();
       return true;
@@ -754,6 +807,12 @@ export class Element extends Control.Element {
       this.unselectOption();
       this.updateValidation();
     }
+    for (const value in this.optionsMap) {
+      const options = this.optionsMap[value];
+      for (const option of options) {
+        (this.optionElementMap.get(option) as HTMLElement).remove();
+      }
+    }
     this.optionsMap = {};
     this.updatePropertyState('found', false);
     JSX.clear(this.getRequiredChildElement(this.resultSlot));
@@ -761,34 +820,26 @@ export class Element extends Control.Element {
 
   /**
    * Opens the options list.
+   * @returns Returns true when the options list was closed, false otherwise.
    */
   @Class.Public()
-  public open(): void {
-    if (!this.readOnly && !this.disabled) {
-      if (this.searchable) {
-        const search = this.getRequiredChildElement(this.searchSlot) as any;
-        if (search.reset instanceof Function) {
-          search.reset();
-        } else if ('value' in search) {
-          search.value = search.defaultValue;
-        }
-        if (search.focus instanceof Function) {
-          search.focus();
-        }
-        this.canClose = false;
-      }
-      this.updateResultList();
-      this.updatePropertyState('opened', true);
+  public open(): boolean {
+    if (!this.readOnly && !this.disabled && !this.opened) {
+      return this.openList(), true;
     }
+    return false;
   }
 
   /**
    * Closes the options list.
+   * @returns Returns true when the options list was closed, false otherwise.
    */
   @Class.Public()
-  public close(): void {
-    this.updatePropertyState('found', false);
-    this.updatePropertyState('opened', false);
+  public close(): boolean {
+    if (this.opened) {
+      return this.closeList(), true;
+    }
+    return false;
   }
 
   /**
@@ -797,9 +848,9 @@ export class Element extends Control.Element {
   @Class.Public()
   public toggle(): void {
     if (this.opened) {
-      this.close();
+      this.closeList();
     } else {
-      this.open();
+      this.openList();
     }
   }
 }
