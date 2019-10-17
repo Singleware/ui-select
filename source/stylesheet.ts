@@ -29,6 +29,18 @@ export class Stylesheet extends OSS.Stylesheet {
   private arrow = this.select(':host>.select>.field>.arrow');
 
   /**
+   * Unselect styles.
+   */
+  @Class.Private()
+  private unselect = this.select(':host>.select>.field>.unselect');
+
+  /**
+   * Unselect active styles.
+   */
+  @Class.Private()
+  private unselectActive = this.select(':host(:not([empty]))>.select>.field:hover>.unselect');
+
+  /**
    * Slotted selection styles.
    */
   @Class.Private()
@@ -45,6 +57,33 @@ export class Stylesheet extends OSS.Stylesheet {
    */
   @Class.Private()
   private slottedArrow = this.select(':host>.select>.field>.arrow::slotted(*)');
+
+  /**
+   * Slotted unselect styles.
+   */
+  @Class.Private()
+  private slottedUnselect = this.select(':host>.select>.field>.unselect::slotted(*)');
+
+  /**
+   * Slotted unselect styles.
+   */
+  @Class.Private()
+  private slottedUnselectBeforeAfter = this.select(
+    ':host>.select>.field>.unselect::slotted(*)::after',
+    ':host>.select>.field>.unselect::slotted(*)::before'
+  );
+
+  /**
+   * Slotted unselect styles.
+   */
+  @Class.Private()
+  private slottedUnselectBefore = this.select(':host>.select>.field>.unselect::slotted(*)::before');
+
+  /**
+   * Slotted unselect styles.
+   */
+  @Class.Private()
+  private slottedUnselectAfter = this.select(':host>.select>.field>.unselect::slotted(*)::after');
 
   /**
    * Slotted arrow styles.
@@ -80,16 +119,39 @@ export class Stylesheet extends OSS.Stylesheet {
     this.element.width = 'inherit';
     this.element.userSelect = 'none';
     this.field.display = 'flex';
+    this.unselect.position = 'absolute';
+    this.unselect.visibility = 'hidden';
+    this.unselect.cursor = 'pointer';
+    this.unselect.top = '0';
+    this.unselect.bottom = '0';
+    this.unselect.right = '0';
+    this.unselectActive.visibility = 'visible';
     this.arrow.position = 'absolute';
     this.arrow.top = '0';
     this.arrow.bottom = '0';
     this.arrow.right = '0';
     this.slottedSelection.cursor = 'default';
-    this.slottedInput.textAlign = 'left';
     this.slottedInput.width = '100%';
+    this.slottedInput.whiteSpace = 'nowrap';
+    this.slottedInput.textAlign = 'left';
+    this.slottedInput.paddingRight = '2.5rem';
+    this.slottedUnselect.position = 'absolute';
+    this.slottedUnselect.top = '50%';
+    this.slottedUnselect.right = '1.5rem';
+    this.slottedUnselect.width = '0.5rem';
+    this.slottedUnselect.height = '0.5rem';
+    this.slottedUnselect.transform = 'translate(-50%,-50%)';
+    this.slottedUnselectBeforeAfter.content = '""';
+    this.slottedUnselectBeforeAfter.position = 'absolute';
+    this.slottedUnselectBeforeAfter.height = 'inherit';
+    this.slottedUnselectBeforeAfter.width = '0.0625rem';
+    this.slottedUnselectBeforeAfter.left = '0.25rem';
+    this.slottedUnselectBeforeAfter.backgroundColor = 'black';
+    this.slottedUnselectBefore.transform = 'rotate(45deg)';
+    this.slottedUnselectAfter.transform = 'rotate(-45deg)';
     this.slottedArrow.position = 'absolute';
     this.slottedArrow.top = '50%';
-    this.slottedArrow.right = '0.5rem';
+    this.slottedArrow.right = '0.75rem';
     this.slottedArrow.width = '0';
     this.slottedArrow.height = '0';
     this.slottedArrow.transform = 'translate(-50%,-50%)';

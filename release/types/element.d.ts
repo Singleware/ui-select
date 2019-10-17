@@ -58,6 +58,10 @@ export declare class Element extends Control.Element {
      */
     private arrowSlot;
     /**
+     * Unselect slot element.
+     */
+    private unselectSlot;
+    /**
      * Search slot element.
      */
     private searchSlot;
@@ -142,6 +146,11 @@ export declare class Element extends Control.Element {
      */
     private selectNextOptionBySearchAndNotify;
     /**
+     * Unselects the current option, element and notifies the change.
+     * @returns Returns true when the current option was unselected, false otherwise.
+     */
+    private unselectOptionAndNotify;
+    /**
      * Unselects the current selected option.
      */
     private unselectOption;
@@ -197,6 +206,10 @@ export declare class Element extends Control.Element {
      * Toggles the list, event handler.
      */
     private toggleListHandler;
+    /**
+     * Unselect current option, event handler.
+     */
+    private unselectHandler;
     /**
      * Default constructor.
      */

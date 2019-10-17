@@ -7,7 +7,7 @@
   "name": "@singleware/ui-select",
   "description": "Singleware UI select package.",
   "license": "MIT",
-  "version": "1.1.28",
+  "version": "1.1.29",
   "main": "release/source/index.js",
   "types": "release/types/index.d.ts",
   "keywords": [

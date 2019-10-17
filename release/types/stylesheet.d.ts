@@ -16,6 +16,14 @@ export declare class Stylesheet extends OSS.Stylesheet {
      */
     private arrow;
     /**
+     * Unselect styles.
+     */
+    private unselect;
+    /**
+     * Unselect active styles.
+     */
+    private unselectActive;
+    /**
      * Slotted selection styles.
      */
     private slottedSelection;
@@ -27,6 +35,22 @@ export declare class Stylesheet extends OSS.Stylesheet {
      * Slotted arrow styles.
      */
     private slottedArrow;
+    /**
+     * Slotted unselect styles.
+     */
+    private slottedUnselect;
+    /**
+     * Slotted unselect styles.
+     */
+    private slottedUnselectBeforeAfter;
+    /**
+     * Slotted unselect styles.
+     */
+    private slottedUnselectBefore;
+    /**
+     * Slotted unselect styles.
+     */
+    private slottedUnselectAfter;
     /**
      * Slotted arrow styles.
      */

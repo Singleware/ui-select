@@ -70,6 +70,10 @@ let Element = Element_1 = class Element extends Control.Element {
          */
         this.arrowSlot = JSX.create("slot", { name: "arrow", class: "arrow", onClick: this.toggleListHandler.bind(this) });
         /**
+         * Unselect slot element.
+         */
+        this.unselectSlot = JSX.create("slot", { name: "unselect", class: "unselect", onClick: this.unselectHandler.bind(this) });
+        /**
          * Search slot element.
          */
         this.searchSlot = JSX.create("slot", { name: "search", class: "search", onKeyUp: this.updateResultList.bind(this) });
@@ -88,6 +92,7 @@ let Element = Element_1 = class Element extends Control.Element {
             JSX.create("div", { class: "field" },
                 this.searchSlot,
                 this.inputSlot,
+                this.unselectSlot,
                 this.arrowSlot),
             this.resultSlot,
             this.emptySlot));
@@ -285,6 +290,24 @@ let Element = Element_1 = class Element extends Control.Element {
         return false;
     }
     /**
+     * Unselects the current option, element and notifies the change.
+     * @returns Returns true when the current option was unselected, false otherwise.
+     */
+    unselectOptionAndNotify() {
+        if (this.selectedOption !== void 0) {
+            const event = new Event('change', { bubbles: true, cancelable: true });
+            const saved = this.selectedOption;
+            this.unselectOption();
+            if (!this.dispatchEvent(event)) {
+                if (saved) {
+                    this.selectOption(saved);
+                }
+                return false;
+            }
+        }
+        return true;
+    }
+    /**
      * Unselects the current selected option.
      */
     unselectOption() {
@@ -453,6 +476,14 @@ let Element = Element_1 = class Element extends Control.Element {
         }
         else {
             this.openListHandler();
+        }
+    }
+    /**
+     * Unselect current option, event handler.
+     */
+    unselectHandler() {
+        if (this.unselectOptionAndNotify()) {
+            this.updateValidation();
         }
     }
     /**
@@ -747,6 +778,9 @@ __decorate([
 ], Element.prototype, "arrowSlot", void 0);
 __decorate([
     Class.Private()
+], Element.prototype, "unselectSlot", void 0);
+__decorate([
+    Class.Private()
 ], Element.prototype, "searchSlot", void 0);
 __decorate([
     Class.Private()
@@ -798,6 +832,9 @@ __decorate([
 ], Element.prototype, "selectNextOptionBySearchAndNotify", null);
 __decorate([
     Class.Private()
+], Element.prototype, "unselectOptionAndNotify", null);
+__decorate([
+    Class.Private()
 ], Element.prototype, "unselectOption", null);
 __decorate([
     Class.Private()
@@ -835,6 +872,9 @@ __decorate([
 __decorate([
     Class.Private()
 ], Element.prototype, "toggleListHandler", null);
+__decorate([
+    Class.Private()
+], Element.prototype, "unselectHandler", null);
 __decorate([
     Class.Public()
 ], Element.prototype, "selection", null);

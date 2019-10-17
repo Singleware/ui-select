@@ -98,6 +98,12 @@ export class Element extends Control.Element {
   private arrowSlot = <slot name="arrow" class="arrow" onClick={this.toggleListHandler.bind(this)} /> as HTMLSlotElement;
 
   /**
+   * Unselect slot element.
+   */
+  @Class.Private()
+  private unselectSlot = <slot name="unselect" class="unselect" onClick={this.unselectHandler.bind(this)} /> as HTMLSlotElement;
+
+  /**
    * Search slot element.
    */
   @Class.Private()
@@ -126,6 +132,7 @@ export class Element extends Control.Element {
       <div class="field">
         {this.searchSlot}
         {this.inputSlot}
+        {this.unselectSlot}
         {this.arrowSlot}
       </div>
       {this.resultSlot}
@@ -347,6 +354,26 @@ export class Element extends Control.Element {
   }
 
   /**
+   * Unselects the current option, element and notifies the change.
+   * @returns Returns true when the current option was unselected, false otherwise.
+   */
+  @Class.Private()
+  private unselectOptionAndNotify(): boolean {
+    if (this.selectedOption !== void 0) {
+      const event = new Event('change', { bubbles: true, cancelable: true });
+      const saved = this.selectedOption;
+      this.unselectOption();
+      if (!this.dispatchEvent(event)) {
+        if (saved) {
+          this.selectOption(saved);
+        }
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
    * Unselects the current selected option.
    */
   @Class.Private()
@@ -530,6 +557,16 @@ export class Element extends Control.Element {
       this.closeListHandler();
     } else {
       this.openListHandler();
+    }
+  }
+
+  /**
+   * Unselect current option, event handler.
+   */
+  @Class.Private()
+  private unselectHandler(): void {
+    if (this.unselectOptionAndNotify()) {
+      this.updateValidation();
     }
   }
 
