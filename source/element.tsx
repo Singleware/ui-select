@@ -10,6 +10,7 @@ import * as Rendering from './rendering';
 import * as Internals from './internals';
 
 import { Stylesheet } from './stylesheet';
+import { Option } from './option';
 
 /**
  * Select element.
@@ -95,25 +96,25 @@ export class Element extends Control.Element {
    * Arrow slot element.
    */
   @Class.Private()
-  private arrowSlot = <slot name="arrow" class="arrow" onClick={this.toggleListHandler.bind(this)} /> as HTMLSlotElement;
+  private arrowSlot = (<slot name="arrow" class="arrow" onClick={this.toggleListHandler.bind(this)} />) as HTMLSlotElement;
 
   /**
    * Unselect slot element.
    */
   @Class.Private()
-  private unselectSlot = <slot name="unselect" class="unselect" onClick={this.unselectHandler.bind(this)} /> as HTMLSlotElement;
+  private unselectSlot = (<slot name="unselect" class="unselect" onClick={this.unselectHandler.bind(this)} />) as HTMLSlotElement;
 
   /**
    * Search slot element.
    */
   @Class.Private()
-  private searchSlot = <slot name="search" class="search" onKeyUp={this.updateResultList.bind(this)} /> as HTMLSlotElement;
+  private searchSlot = (<slot name="search" class="search" onKeyUp={this.updateResultList.bind(this)} />) as HTMLSlotElement;
 
   /**
    * Result slot element.
    */
   @Class.Private()
-  private resultSlot = <slot name="result" class="result" onMouseDown={this.preventCloseHandler.bind(this)} /> as HTMLSlotElement;
+  private resultSlot = (<slot name="result" class="result" onMouseDown={this.preventCloseHandler.bind(this)} />) as HTMLSlotElement;
 
   /**
    * Empty slot element.
@@ -144,7 +145,7 @@ export class Element extends Control.Element {
    * Select styles element.
    */
   @Class.Private()
-  private selectStyles = <style type="text/css">{this.styles.toString()}</style> as HTMLStyleElement;
+  private selectStyles = (<style type="text/css">{this.styles.toString()}</style>) as HTMLStyleElement;
 
   /**
    * Update all validation attributes.
@@ -182,7 +183,7 @@ export class Element extends Control.Element {
       const options = this.optionsMap[value] as Internals.Option[];
       for (const option of options) {
         let element = this.optionElementMap.get(option) as HTMLElement;
-        if (search.length === 0 || option.tags.find(tag => tag.includes(search))) {
+        if (search.length === 0 || option.tags.find((tag) => tag.includes(search))) {
           this.activatedList.push(option);
           if (option.group) {
             const group = this.groupsMap[option.group] as Internals.Group;
@@ -212,7 +213,7 @@ export class Element extends Control.Element {
   @Class.Private()
   private renderOptionElement(option: Internals.Option): HTMLElement | undefined {
     const detail = { option: option, element: void 0 } as Rendering.Option;
-    const event = new CustomEvent<Rendering.Option>('renderoption', { bubbles: true, cancelable: true, detail: detail });
+    const event = new CustomEvent<Rendering.Option>('renderoption', { bubbles: false, cancelable: true, detail: detail });
     if (this.dispatchEvent(event)) {
       return (
         <div class="option" onClick={this.optionClickHandler.bind(this, option)}>
@@ -231,9 +232,9 @@ export class Element extends Control.Element {
   @Class.Private()
   private renderSelectionElement(option: Internals.Option): HTMLElement | undefined {
     const detail = { option: option, element: void 0 } as Rendering.Option;
-    const event = new CustomEvent<Rendering.Option>('renderselection', { bubbles: true, cancelable: true, detail: detail });
+    const event = new CustomEvent<Rendering.Option>('renderselection', { bubbles: false, cancelable: true, detail: detail });
     if (this.dispatchEvent(event)) {
-      return <div class="selection">{detail.element || option.label || option.value}</div> as HTMLElement;
+      return (<div class="selection">{detail.element || option.label || option.value}</div>) as HTMLElement;
     }
     return void 0;
   }
@@ -246,9 +247,9 @@ export class Element extends Control.Element {
   @Class.Private()
   private renderGroupElement(group: Internals.Group): HTMLElement | undefined {
     const detail = { group: group, element: void 0 } as Rendering.Group;
-    const event = new CustomEvent<Rendering.Group>('rendergroup', { bubbles: true, cancelable: true, detail: detail });
+    const event = new CustomEvent<Rendering.Group>('rendergroup', { bubbles: false, cancelable: true, detail: detail });
     if (this.dispatchEvent(event)) {
-      return <div class="group">{detail.element || group.label}</div> as HTMLElement;
+      return (<div class="group">{detail.element || group.label}</div>) as HTMLElement;
     }
     return void 0;
   }
@@ -346,7 +347,7 @@ export class Element extends Control.Element {
     let index = this.activatedList.indexOf(this.selectedOption as Internals.Option);
     for (let l = 0; l < this.activatedList.length; ++l) {
       const option = this.activatedList[++index % this.activatedList.length];
-      if (option.tags.find(tag => tag.includes(search))) {
+      if (option.tags.find((tag) => tag.includes(search))) {
         return this.selectOptionAndNotify(option);
       }
     }
@@ -801,7 +802,7 @@ export class Element extends Control.Element {
       label: label,
       group: data.group,
       tags: this.getTagList(data.tags || [label]),
-      custom: data.custom || {}
+      custom: data.custom || {},
     };
     const element = this.renderOptionElement(option);
     if (element) {
@@ -814,6 +815,43 @@ export class Element extends Control.Element {
       return true;
     }
     return false;
+  }
+
+  /**
+   * Add the specified option list.
+   * @param option Options list.
+   */
+  @Class.Public()
+  public addOptions(options: (Option | string)[]): void {
+    for (const item of options) {
+      let option;
+      if (item instanceof Object) {
+        option = {
+          value: item.value,
+          label: item.label,
+          group: item.group,
+          tags: this.getTagList(item.tags || [item.label]),
+          custom: item.custom || {},
+        };
+      } else {
+        option = {
+          value: item,
+          label: item,
+          group: void 0,
+          tags: this.getTagList([item]),
+          custom: {},
+        };
+      }
+      const element = this.renderOptionElement(option);
+      if (element) {
+        if (!(this.optionsMap[option.value] instanceof Array)) {
+          this.optionsMap[option.value] = [];
+        }
+        this.optionsMap[option.value].push(option);
+        this.optionElementMap.set(option, element);
+      }
+    }
+    this.updateResultList();
   }
 
   /**

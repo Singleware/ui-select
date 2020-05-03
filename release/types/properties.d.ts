@@ -48,7 +48,7 @@ export interface Properties {
   /**
    * Initial options.
    */
-  options?: Option[] | string[];
+  options?: (Option | string)[];
   /**
    * Select children.
    */

@@ -73,27 +73,12 @@ export class Component<T extends Properties = Properties> extends Control.Compon
   }
 
   /**
-   * Add the specified list of options.
-   * @param options List of options.
-   */
-  @Class.Private()
-  private addOptions(options: Option[] | string[]): void {
-    for (const option of options) {
-      if (typeof option !== 'string') {
-        this.skeleton.addOption(option.value, option.label, { group: option.group, tags: option.tags, custom: option.custom });
-      } else {
-        this.skeleton.addOption(option, option);
-      }
-    }
-  }
-
-  /**
    * Initializes the select element adding options and selecting the specified value.
    */
   @Class.Private()
   private initialize(): void {
     if (this.properties.options) {
-      this.addOptions(this.properties.options);
+      this.skeleton.addOptions(this.properties.options);
       if (this.properties.value) {
         this.skeleton.value = this.properties.value;
       }
@@ -328,6 +313,15 @@ export class Component<T extends Properties = Properties> extends Control.Compon
   @Class.Public()
   public addOption(value: string, label: string | JSX.Element, data: Internals.Metadata = {}): boolean {
     return this.skeleton.addOption(value, label, data);
+  }
+
+  /**
+   * Add the specified option list.
+   * @param option Options list.
+   */
+  @Class.Public()
+  public addOptions(options: (Option | string)[]): void {
+    return this.skeleton.addOptions(options);
   }
 
   /**

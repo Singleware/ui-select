@@ -61,25 +61,11 @@ let Component = class Component extends Control.Component {
         }
     }
     /**
-     * Add the specified list of options.
-     * @param options List of options.
-     */
-    addOptions(options) {
-        for (const option of options) {
-            if (typeof option !== 'string') {
-                this.skeleton.addOption(option.value, option.label, { group: option.group, tags: option.tags, custom: option.custom });
-            }
-            else {
-                this.skeleton.addOption(option, option);
-            }
-        }
-    }
-    /**
      * Initializes the select element adding options and selecting the specified value.
      */
     initialize() {
         if (this.properties.options) {
-            this.addOptions(this.properties.options);
+            this.skeleton.addOptions(this.properties.options);
             if (this.properties.value) {
                 this.skeleton.value = this.properties.value;
             }
@@ -256,6 +242,13 @@ let Component = class Component extends Control.Component {
         return this.skeleton.addOption(value, label, data);
     }
     /**
+     * Add the specified option list.
+     * @param option Options list.
+     */
+    addOptions(options) {
+        return this.skeleton.addOptions(options);
+    }
+    /**
      * Removes all the options that corresponds to the specified option value.
      * @param value Option value.
      * @returns Returns true when some option was removed or false otherwise.
@@ -300,9 +293,6 @@ __decorate([
 __decorate([
     Class.Private()
 ], Component.prototype, "renderGroupHandler", null);
-__decorate([
-    Class.Private()
-], Component.prototype, "addOptions", null);
 __decorate([
     Class.Private()
 ], Component.prototype, "initialize", null);
@@ -366,6 +356,9 @@ __decorate([
 __decorate([
     Class.Public()
 ], Component.prototype, "addOption", null);
+__decorate([
+    Class.Public()
+], Component.prototype, "addOptions", null);
 __decorate([
     Class.Public()
 ], Component.prototype, "removeOption", null);

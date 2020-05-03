@@ -5,9 +5,8 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-Object.defineProperty(exports, "__esModule", { value: true });
 var Element_1;
-"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * Copyright (C) 2018 Silas B. Domingos
  * This source code is licensed under the MIT License as described in the file LICENSE.
@@ -68,19 +67,19 @@ let Element = Element_1 = class Element extends Control.Element {
         /**
          * Arrow slot element.
          */
-        this.arrowSlot = JSX.create("slot", { name: "arrow", class: "arrow", onClick: this.toggleListHandler.bind(this) });
+        this.arrowSlot = (JSX.create("slot", { name: "arrow", class: "arrow", onClick: this.toggleListHandler.bind(this) }));
         /**
          * Unselect slot element.
          */
-        this.unselectSlot = JSX.create("slot", { name: "unselect", class: "unselect", onClick: this.unselectHandler.bind(this) });
+        this.unselectSlot = (JSX.create("slot", { name: "unselect", class: "unselect", onClick: this.unselectHandler.bind(this) }));
         /**
          * Search slot element.
          */
-        this.searchSlot = JSX.create("slot", { name: "search", class: "search", onKeyUp: this.updateResultList.bind(this) });
+        this.searchSlot = (JSX.create("slot", { name: "search", class: "search", onKeyUp: this.updateResultList.bind(this) }));
         /**
          * Result slot element.
          */
-        this.resultSlot = JSX.create("slot", { name: "result", class: "result", onMouseDown: this.preventCloseHandler.bind(this) });
+        this.resultSlot = (JSX.create("slot", { name: "result", class: "result", onMouseDown: this.preventCloseHandler.bind(this) }));
         /**
          * Empty slot element.
          */
@@ -99,7 +98,7 @@ let Element = Element_1 = class Element extends Control.Element {
         /**
          * Select styles element.
          */
-        this.selectStyles = JSX.create("style", { type: "text/css" }, this.styles.toString());
+        this.selectStyles = (JSX.create("style", { type: "text/css" }, this.styles.toString()));
         const shadow = JSX.append(this.attachShadow({ mode: 'closed' }), this.selectStyles, this.selectLayout);
         shadow.addEventListener('keydown', this.optionKeydownHandler.bind(this));
         this.inputSlot.addEventListener('focus', this.focusListHandler.bind(this), true);
@@ -138,7 +137,7 @@ let Element = Element_1 = class Element extends Control.Element {
             const options = this.optionsMap[value];
             for (const option of options) {
                 let element = this.optionElementMap.get(option);
-                if (search.length === 0 || option.tags.find(tag => tag.includes(search))) {
+                if (search.length === 0 || option.tags.find((tag) => tag.includes(search))) {
                     this.activatedList.push(option);
                     if (option.group) {
                         const group = this.groupsMap[option.group];
@@ -168,7 +167,7 @@ let Element = Element_1 = class Element extends Control.Element {
      */
     renderOptionElement(option) {
         const detail = { option: option, element: void 0 };
-        const event = new CustomEvent('renderoption', { bubbles: true, cancelable: true, detail: detail });
+        const event = new CustomEvent('renderoption', { bubbles: false, cancelable: true, detail: detail });
         if (this.dispatchEvent(event)) {
             return (JSX.create("div", { class: "option", onClick: this.optionClickHandler.bind(this, option) }, detail.element || option.label || option.value));
         }
@@ -181,9 +180,9 @@ let Element = Element_1 = class Element extends Control.Element {
      */
     renderSelectionElement(option) {
         const detail = { option: option, element: void 0 };
-        const event = new CustomEvent('renderselection', { bubbles: true, cancelable: true, detail: detail });
+        const event = new CustomEvent('renderselection', { bubbles: false, cancelable: true, detail: detail });
         if (this.dispatchEvent(event)) {
-            return JSX.create("div", { class: "selection" }, detail.element || option.label || option.value);
+            return (JSX.create("div", { class: "selection" }, detail.element || option.label || option.value));
         }
         return void 0;
     }
@@ -194,9 +193,9 @@ let Element = Element_1 = class Element extends Control.Element {
      */
     renderGroupElement(group) {
         const detail = { group: group, element: void 0 };
-        const event = new CustomEvent('rendergroup', { bubbles: true, cancelable: true, detail: detail });
+        const event = new CustomEvent('rendergroup', { bubbles: false, cancelable: true, detail: detail });
         if (this.dispatchEvent(event)) {
-            return JSX.create("div", { class: "group" }, detail.element || group.label);
+            return (JSX.create("div", { class: "group" }, detail.element || group.label));
         }
         return void 0;
     }
@@ -283,7 +282,7 @@ let Element = Element_1 = class Element extends Control.Element {
         let index = this.activatedList.indexOf(this.selectedOption);
         for (let l = 0; l < this.activatedList.length; ++l) {
             const option = this.activatedList[++index % this.activatedList.length];
-            if (option.tags.find(tag => tag.includes(search))) {
+            if (option.tags.find((tag) => tag.includes(search))) {
                 return this.selectOptionAndNotify(option);
             }
         }
@@ -656,7 +655,7 @@ let Element = Element_1 = class Element extends Control.Element {
             label: label,
             group: data.group,
             tags: this.getTagList(data.tags || [label]),
-            custom: data.custom || {}
+            custom: data.custom || {},
         };
         const element = this.renderOptionElement(option);
         if (element) {
@@ -669,6 +668,42 @@ let Element = Element_1 = class Element extends Control.Element {
             return true;
         }
         return false;
+    }
+    /**
+     * Add the specified option list.
+     * @param option Options list.
+     */
+    addOptions(options) {
+        for (const item of options) {
+            let option;
+            if (item instanceof Object) {
+                option = {
+                    value: item.value,
+                    label: item.label,
+                    group: item.group,
+                    tags: this.getTagList(item.tags || [item.label]),
+                    custom: item.custom || {},
+                };
+            }
+            else {
+                option = {
+                    value: item,
+                    label: item,
+                    group: void 0,
+                    tags: this.getTagList([item]),
+                    custom: {},
+                };
+            }
+            const element = this.renderOptionElement(option);
+            if (element) {
+                if (!(this.optionsMap[option.value] instanceof Array)) {
+                    this.optionsMap[option.value] = [];
+                }
+                this.optionsMap[option.value].push(option);
+                this.optionElementMap.set(option, element);
+            }
+        }
+        this.updateResultList();
     }
     /**
      * Remove all options that corresponds to the specified option value.
@@ -932,6 +967,9 @@ __decorate([
 __decorate([
     Class.Public()
 ], Element.prototype, "addOption", null);
+__decorate([
+    Class.Public()
+], Element.prototype, "addOptions", null);
 __decorate([
     Class.Public()
 ], Element.prototype, "removeOption", null);

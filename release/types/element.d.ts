@@ -1,6 +1,7 @@
 import * as JSX from '@singleware/jsx';
 import * as Control from '@singleware/ui-control';
 import * as Internals from './internals';
+import { Option } from './option';
 /**
  * Select element.
  */
@@ -217,41 +218,43 @@ export declare class Element extends Control.Element {
     /**
      * Gets the selected option.
      */
-    readonly selection: Internals.Option | undefined;
+    get selection(): Internals.Option | undefined;
     /**
      * Gets the current search text.
      */
-    readonly search: string;
+    get search(): string;
     /**
      * Gets the opened state.
      */
-    readonly opened: boolean;
+    get opened(): boolean;
     /**
      * Gets the options found state.
      */
-    readonly found: boolean;
+    get found(): boolean;
     /**
      * Gets the number of active options.
      */
-    readonly count: number;
+    get count(): number;
     /**
      * Determines whether the element is empty or not.
      */
-    readonly empty: boolean;
+    get empty(): boolean;
     /**
      * Gets the element name.
      */
+    get name(): string;
     /**
-    * Sets the element name.
-    */
-    name: string;
+     * Sets the element name.
+     */
+    set name(name: string);
     /**
      * Gets the element value.
      */
+    get value(): string | undefined;
     /**
-    * Sets the element value.
-    */
-    value: string | undefined;
+     * Sets the element value.
+     */
+    set value(value: string | undefined);
     /**
      * Default value for resets.
      */
@@ -259,31 +262,35 @@ export declare class Element extends Control.Element {
     /**
      * Gets the searchable state of the element.
      */
+    get searchable(): boolean;
     /**
-    * Sets the searchable state of the element.
-    */
-    searchable: boolean;
+     * Sets the searchable state of the element.
+     */
+    set searchable(state: boolean);
     /**
      * Gets the required state of the element.
      */
+    get required(): boolean;
     /**
-    * Sets the required state of the element.
-    */
-    required: boolean;
+     * Sets the required state of the element.
+     */
+    set required(state: boolean);
     /**
      * Gets the read-only state of the element.
      */
+    get readOnly(): boolean;
     /**
-    * Sets the read-only state of the element.
-    */
-    readOnly: boolean;
+     * Sets the read-only state of the element.
+     */
+    set readOnly(state: boolean);
     /**
      * Gets the disabled state of the element.
      */
+    get disabled(): boolean;
     /**
-    * Sets the disabled state of the element.
-    */
-    disabled: boolean;
+     * Sets the disabled state of the element.
+     */
+    set disabled(state: boolean);
     /**
      * Move the focus to this element.
      */
@@ -316,6 +323,11 @@ export declare class Element extends Control.Element {
      * @returns Returns true when the option has been added, false otherwise.
      */
     addOption(value: string, label: string | JSX.Element, data?: Internals.Metadata): boolean;
+    /**
+     * Add the specified option list.
+     * @param option Options list.
+     */
+    addOptions(options: (Option | string)[]): void;
     /**
      * Remove all options that corresponds to the specified option value.
      * @param value Option value.
