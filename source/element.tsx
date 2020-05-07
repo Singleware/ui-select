@@ -426,13 +426,13 @@ export class Element extends Control.Element {
    * @returns Returns the generated tag list.
    */
   @Class.Private()
-  private getTagList(inputs: (string | JSX.Element | undefined)[]): string[] {
+  private getTagList(inputs: (string | number | boolean | JSX.Element | null | undefined)[]): string[] {
     const tags = [];
     for (const input of inputs) {
       if (input instanceof Element) {
         tags.push(input.innerText.toLocaleLowerCase());
       } else if (input !== void 0) {
-        tags.push((input as string).toLocaleLowerCase());
+        tags.push(`${input}`.toLocaleLowerCase());
       }
     }
     return tags;

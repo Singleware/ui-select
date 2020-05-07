@@ -360,7 +360,7 @@ let Element = Element_1 = class Element extends Control.Element {
                 tags.push(input.innerText.toLocaleLowerCase());
             }
             else if (input !== void 0) {
-                tags.push(input.toLocaleLowerCase());
+                tags.push(`${input}`.toLocaleLowerCase());
             }
         }
         return tags;
